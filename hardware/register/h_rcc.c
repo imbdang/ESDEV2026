@@ -62,17 +62,17 @@ void RCC_PLL_Config_HSE(uint8_t mul, uint8_t hse_div2)
 
 uint8_t RCC_HSE_Ready(void)
 {
-    return (RCC->CR & (1 << 17));
+    return (RCC->CR & (1U << 17)) ? 1U : 0U;
 }
 
 uint8_t RCC_HSI_Ready(void)
 {
-    return (RCC->CR & (1 << 1));
+    return (RCC->CR & (1U << 1)) ? 1U : 0U;
 }
 
 uint8_t RCC_PLL_Ready(void)
 {
-    return (RCC->CR & (1 << 25));
+    return (RCC->CR & (1U << 25)) ? 1U : 0U;
 }
 
 void RCC_Select_SYSCLK_HSE(void)
@@ -98,10 +98,14 @@ uint8_t RCC_Get_SYSCLK_Source(void)
     return (RCC->CFGR >> 2) & 0x3;
 }
 
-void RCC_APB2_Reset(uint32_t mask)
+void RCC_APB1_Enable(uint32_t mask)
 {
-    RCC->APB2RSTR |= mask;
-    RCC->APB2RSTR &= ~mask;
+    RCC->APB1ENR |= mask;
+}
+
+void RCC_APB1_Disable(uint32_t mask)
+{
+    RCC->APB1ENR &= ~mask;
 }
 
 void RCC_APB1_Reset(uint32_t mask)
@@ -109,3 +113,20 @@ void RCC_APB1_Reset(uint32_t mask)
     RCC->APB1RSTR |= mask;
     RCC->APB1RSTR &= ~mask;
 }
+
+void RCC_APB2_Enable(uint32_t mask)
+{
+    RCC->APB2ENR |= mask;
+}
+
+void RCC_APB2_Disable(uint32_t mask)
+{
+    RCC->APB2ENR &= ~mask;
+}
+
+void RCC_APB2_Reset(uint32_t mask)
+{
+    RCC->APB2RSTR |= mask;
+    RCC->APB2RSTR &= ~mask;
+}
+

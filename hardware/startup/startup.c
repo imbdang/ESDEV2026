@@ -6,6 +6,7 @@ extern int main(void);
 
 void Reset_Handler(void);
 void Default_Handler(void);
+void SysTick_Handler(void);
 
 __attribute__((section(".isr_vector")))
 void (* const vector_table[])(void) = {
@@ -21,7 +22,7 @@ void (* const vector_table[])(void) = {
     Default_Handler,              // 12: DebugMonitor
     0,                            // reserved
     Default_Handler,              // 14: PendSV
-    Default_Handler,              // 15: SysTick
+    SysTick_Handler,              // 15: SysTick
     /* External IRQs start here: index = 16 + IRQn */
     Default_Handler, // IRQ0 WWDG
     Default_Handler, // IRQ1 PVD
