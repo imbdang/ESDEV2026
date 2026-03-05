@@ -4,6 +4,8 @@
 #include "h_rcc.h"
 #include "systick.h"
 
+
+//bdang test
 void M_BlinkLED_PC13(void)
 {
     RCC_APB2_Enable(RCC_APB2ENR_IOPCEN);

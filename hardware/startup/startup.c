@@ -7,6 +7,8 @@ extern int main(void);
 void Reset_Handler(void);
 void Default_Handler(void);
 void SysTick_Handler(void);
+void EXTI0_IRQHandler(void);      
+void EXTI9_5_IRQHandler(void);    
 
 __attribute__((section(".isr_vector")))
 void (* const vector_table[])(void) = {
@@ -30,7 +32,7 @@ void (* const vector_table[])(void) = {
     Default_Handler, // IRQ3 RTC
     Default_Handler, // IRQ4 FLASH
     Default_Handler, // IRQ5 RCC
-    Default_Handler, // IRQ6 EXTI0
+    EXTI0_IRQHandler, // IRQ6 EXTI0
     Default_Handler, // IRQ7 EXTI1
     Default_Handler, // IRQ8 EXTI2
     Default_Handler, // IRQ9 EXTI3
@@ -47,7 +49,7 @@ void (* const vector_table[])(void) = {
     Default_Handler, // IRQ20 USB_LP_CAN_RX0
     Default_Handler, // IRQ21 CAN_RX1
     Default_Handler, // IRQ22 CAN_SCE
-    Default_Handler, // IRQ23 EXTI9_5
+    EXTI9_5_IRQHandler, // IRQ23 EXTI9_5
     Default_Handler, // IRQ24 TIM1_BRK
     Default_Handler, // IRQ25 TIM1_UP
     Default_Handler, // IRQ26 TIM1_TRG_COM

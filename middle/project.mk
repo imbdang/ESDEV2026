@@ -1,6 +1,6 @@
 MIDDLE_DIRS := middle/clock \
 			   middle/gpio \
-			   middle/uart \
+			   middle/encoder \
 			   middle/timer
 
 COMPONENTS_SRCDIRS		+= $(MIDDLE_DIRS)

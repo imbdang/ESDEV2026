@@ -11,7 +11,7 @@ ROOT := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 ###################################
 #           TOOLCHAINS
 ###################################
-TOOLCHAINS_PATH   := /home/bdang/toolchains/gcc-arm-none-eabi-14.3
+TOOLCHAINS_PATH   := /home/imbdang/Toolchain/arm-gcc-14.3
 PREFIX_TOOLCHAINS := arm-none-eabi
 
 CC   := $(TOOLCHAINS_PATH)/bin/$(PREFIX_TOOLCHAINS)-gcc

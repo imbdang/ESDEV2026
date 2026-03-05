@@ -1,4 +1,4 @@
-#include "h_timer1.h"
+#include "h_timer.h"
 
 void TIM1_SetPSC(uint16_t psc)
 {

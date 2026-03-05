@@ -3,10 +3,10 @@
 
 // ===================== TB6612FNG (Dual DC Motor Driver) =====================
 #define TB6612_PWMA_PORT      GPIOA
-#define TB6612_PWMA_PIN       GPIO_PIN_8   // TIM1_CH1
+#define TB6612_PWMA_PIN       GPIO_PIN_9   // TIM1_CH1
 
 #define TB6612_PWMB_PORT      GPIOA
-#define TB6612_PWMB_PIN       GPIO_PIN_9   // TIM1_CH2
+#define TB6612_PWMB_PIN       GPIO_PIN_8   // TIM1_CH2
 
 #define TB6612_AIN1_PORT      GPIOB
 #define TB6612_AIN1_PIN       GPIO_PIN_0
@@ -29,15 +29,9 @@
 #define ENC1_A_PIN            GPIO_PIN_0   // TIM2_CH1
 
 #define ENC1_B_PORT           GPIOA
-#define ENC1_B_PIN            GPIO_PIN_1   // TIM2_CH2
+#define ENC1_B_PIN            GPIO_PIN_5   // TIM2_CH2
 
-
-// ===================== Encoder H602 2 - TIM3 =====================
-#define ENC2_A_PORT           GPIOA
-#define ENC2_A_PIN            GPIO_PIN_6   // TIM3_CH1
-
-#define ENC2_B_PORT           GPIOA
-#define ENC2_B_PIN            GPIO_PIN_7   // TIM3_CH2
+// A0 A5
 
 
 // ===================== I2C1 (MPU + Color Sensor I2C) =====================
@@ -58,9 +52,6 @@
 #define COLOR_INT_PIN         GPIO_PIN_4   // free GPIO, EXTI capable
 
 
-// ===================== Convenience macros =====================
-// #define PIN_HIGH(port, pin)   HAL_GPIO_WritePin((port), (pin), GPIO_PIN_SET)
-// #define PIN_LOW(port, pin)    HAL_GPIO_WritePin((port), (pin), GPIO_PIN_RESET)
 
 
 #endif /*<! __HARDWARE_H__ */

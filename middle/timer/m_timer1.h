@@ -1,7 +1,7 @@
 #ifndef __M_TIMER_H__
 #define __M_TIMER_H__
 
-#include "h_timer1.h"
+#include "h_timer.h"
 
 /* ====================================== TIMER1 ======================================= */
 void TIM1_PWM_Init(uint32_t core_clk_hz, uint32_t pwm_hz);

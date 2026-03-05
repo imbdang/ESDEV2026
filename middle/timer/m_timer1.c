@@ -1,6 +1,5 @@
 #include "m_timer1.h"
 #include "h_rcc.h"
-#include "h_timer1.h"
 
 static uint16_t clamp_u16(uint16_t x, uint16_t lo, uint16_t hi)
 {
