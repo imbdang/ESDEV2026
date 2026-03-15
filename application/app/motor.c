@@ -2,11 +2,15 @@
 
 #include "m_gpio.h"
 #include "m_timer1.h"
+#include "m_encoder.h"
+#include "m_mpu.h"
+#include "systick.h"
 
 void Motor_Init(uint32_t core_clk_hz, uint32_t pwm_hz)
 {
     TB6612_InitPins();           
     TIM1_PWM_Init(core_clk_hz, pwm_hz); 
+    Encoder_Init();
 }
 
 void MotorA_Set(int16_t speed)
@@ -25,4 +29,21 @@ void MotorB_Set(int16_t speed)
     else { GPIO_ClearPin(GPIOB,10); GPIO_ClearPin(GPIOB,11); }
 
     TIM1_CH2_SetDutyPermille((uint16_t)((speed > 1000) ? 1000 : speed));
+}
+
+void Motor_RunPulses(int32_t pulses, int16_t speed)
+{
+    if (pulses <= 0 || speed == 0) return;
+
+    EncoderA_ResetCount();
+    EncoderB_ResetCount();
+
+    MotorA_Set(speed);
+    MotorB_Set(speed);
+
+    while (EncoderA_GetCount() < pulses || EncoderB_GetCount() < pulses)
+        ;
+
+    MotorA_Set(0);
+    MotorB_Set(0);
 }

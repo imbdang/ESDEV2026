@@ -8,7 +8,7 @@
  */
 
 #include <stdint.h>
-#include "encoder.h"
+#include "m_encoder.h"
 
 #define ENCODER_HOLES_PER_REV   20u
 #define RPM_SCALE               30u

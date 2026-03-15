@@ -20,6 +20,9 @@ typedef struct{
 
 #define RCC ((volatile RCC_TypeDef*)0x40021000)
 
+#define RCC_APB2ENR (RCC->APB2ENR)
+#define RCC_APB1ENR (RCC->APB1ENR)
+
 /*<! GPIOx */
 #define RCC_APB2ENR_AFIOEN     (1U << 0)
 #define RCC_APB2ENR_IOPAEN     (1U << 2)
