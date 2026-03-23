@@ -41,7 +41,12 @@
 #define I2C1_SDA_PORT         GPIOB
 #define I2C1_SDA_PIN          GPIO_PIN_7   // I2C1_SDA
 
-// B10 B11 se su dung cho sensor 2
+#define I2C2_SCL_PORT         GPIOB
+#define I2C2_SCL_PIN          GPIO_PIN_10  // I2C2_SCL
+
+#define I2C2_SDA_PORT         GPIOB
+#define I2C2_SDA_PIN          GPIO_PIN_11  // I2C2_SDA
+
 
 
 // ===================== Optional Interrupt Pins (if you want) =====================

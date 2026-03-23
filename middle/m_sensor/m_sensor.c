@@ -1,4 +1,5 @@
 #include "m_sensor.h"
+#include "systick.h"
 
 /* ============================== Registers =================================== */
 #define TCS34_CMD           0x80U   /* command bit - must be set on every access */
@@ -31,6 +32,7 @@ I2C_Status TCS34_Init(volatile I2C_TypeDef *i2c, uint8_t atime, TCS34_Gain gain)
     s = I2C_WriteReg(i2c, TCS34_ADDR, TCS34_CMD | TCS34_REG_ENABLE, TCS34_ENABLE_PON);
     if (s) return s;
 
+    delay_ms(3);
     /* caller must delay >= 3 ms here before AEN */
     /* split into two writes so the caller controls the delay externally */
     /* enable RGBC ADC */

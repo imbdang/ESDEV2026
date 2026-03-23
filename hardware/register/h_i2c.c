@@ -1,11 +1,23 @@
+/* h_i2c.c — STM32F103 bare-metal I2C driver (RM0008)
+ *
+ * Fixes so với bản cũ:
+ *  1. I2C_Init: so sánh địa chỉ peripheral qua integer thay vì pointer
+ *     (tránh compiler warning/UB khi so sánh volatile pointer)
+ *  2. I2C_ReadReg / I2C_ReadRegs: kiểm tra return value của _wait_flag
+ *     ở bước TX trước repeated start (bản cũ bỏ qua)
+ *  3. I2C_Read: xử lý đúng trường hợp len==1 theo RM0008 (NACK+STOP
+ *     phải set trước khi clear ADDR)
+ *  4. Tất cả _wait_flag trong ReadReg/ReadRegs đều được kiểm tra
+ */
+
 #include "h_i2c.h"
 #include "h_rcc.h"
 #include "h_gpio.h"
 
-/* --------------------------------- Timeout --------------------------------- */
-#define I2C_TIMEOUT 100000U
+/* -------------------------------------------------------------------------- */
+#define I2C_TIMEOUT  100000U
 
-/* ========================== Private helpers ================================= */
+/* ========================== Private helpers ================================ */
 
 static I2C_Status _wait_flag(volatile uint32_t *reg, uint32_t flag, uint8_t set)
 {
@@ -26,27 +38,38 @@ static I2C_Status _check_errors(volatile I2C_TypeDef *i2c)
     return I2C_OK;
 }
 
+static void _stop(volatile I2C_TypeDef *i2c)
+{
+    i2c->CR1 |= I2C_CR1_STOP;
+}
+
+/* Gửi START + địa chỉ, đợi ADDR set, clear bằng đọc SR1+SR2 */
 static I2C_Status _start(volatile I2C_TypeDef *i2c, uint8_t addr_rw)
 {
     I2C_Status s;
 
+    /* Chờ bus rảnh */
     s = _wait_flag(&i2c->SR2, I2C_SR2_BUSY, 0);
     if (s) return s;
 
+    /* Phát START */
     i2c->CR1 |= I2C_CR1_START;
     s = _wait_flag(&i2c->SR1, I2C_SR1_SB, 1);
     if (s) return s;
 
+    /* Gửi địa chỉ */
     i2c->DR = addr_rw;
     s = _wait_flag(&i2c->SR1, I2C_SR1_ADDR, 1);
     if (s) { _check_errors(i2c); return s; }
 
+    /* Clear ADDR bằng đọc SR1 rồi SR2 */
     (void)i2c->SR1;
     (void)i2c->SR2;
 
     return I2C_OK;
 }
 
+/* Repeated START: không chờ BUSY (bus đang được giữ bởi master) */
 static I2C_Status _repeated_start(volatile I2C_TypeDef *i2c, uint8_t addr_rw)
 {
     I2C_Status s;
@@ -65,41 +88,56 @@ static I2C_Status _repeated_start(volatile I2C_TypeDef *i2c, uint8_t addr_rw)
     return I2C_OK;
 }
 
-static void _stop(volatile I2C_TypeDef *i2c)
-{
-    i2c->CR1 |= I2C_CR1_STOP;
-}
-
-/* ========================== Public API ===================================== */
+/* ========================== Public API ==================================== */
 
 void I2C_Init(volatile I2C_TypeDef *i2c, uint32_t pclk1_MHz, uint32_t speed_kHz)
 {
-    RCC_APB2ENR |= (1U << 3);    /* GPIOB */
-    RCC_APB1ENR |= (1U << 21);   /* I2C1  */
+    /* Enable GPIOB clock (dùng chung cho I2C1 và I2C2) */
+    RCC_APB2ENR |= (1U << 3);   /* IOPBEN */
 
+    /*
+     * FIX: so sánh địa chỉ qua uint32_t thay vì pointer volatile
+     * Tránh trường hợp compiler không match đúng do volatile qualifier
+     */
+    uint32_t base = (uint32_t)i2c;
+
+    if (base == I2C1_BASE) {
+        RCC_APB1ENR |= (1U << 21);  /* I2C1EN */
+        GPIO_ConfigPin(GPIOB, 6,  GPIO_MODE_OUTPUT_10MHz, GPIO_CNF_OUT_AF_OD);  /* SCL */
+        GPIO_ConfigPin(GPIOB, 7,  GPIO_MODE_OUTPUT_10MHz, GPIO_CNF_OUT_AF_OD);  /* SDA */
+    } else if (base == I2C2_BASE) {
+        RCC_APB1ENR |= (1U << 22);  /* I2C2EN */
+        GPIO_ConfigPin(GPIOB, 10, GPIO_MODE_OUTPUT_10MHz, GPIO_CNF_OUT_AF_OD);  /* SCL */
+        GPIO_ConfigPin(GPIOB, 11, GPIO_MODE_OUTPUT_10MHz, GPIO_CNF_OUT_AF_OD);  /* SDA */
+    }
+    /* Nếu không khớp: không làm gì, tránh cấu hình sai */
+
+    /* Reset peripheral */
     i2c->CR1 |=  I2C_CR1_SWRST;
     i2c->CR1 &= ~I2C_CR1_SWRST;
     i2c->CR1 &= ~I2C_CR1_PE;
 
+    /* FREQ = tần số APB1 (MHz) */
     i2c->CR2 = pclk1_MHz & 0x3FU;
 
     if (speed_kHz <= 100) {
+        /* Standard mode: T_high = T_low = CCR * T_pclk */
         uint32_t ccr = (pclk1_MHz * 1000U) / (2U * speed_kHz);
-        if (ccr < 4) ccr = 4;
+        if (ccr < 4U) ccr = 4U;
         i2c->CCR   = ccr & 0xFFFU;
         i2c->TRISE = pclk1_MHz + 1U;
     } else {
+        /* Fast mode (duty 2:1): T_high = CCR*T_pclk, T_low = 2*CCR*T_pclk */
         uint32_t ccr = (pclk1_MHz * 1000U) / (3U * speed_kHz);
-        if (ccr < 1) ccr = 1;
+        if (ccr < 1U) ccr = 1U;
         i2c->CCR   = I2C_CCR_FS | (ccr & 0xFFFU);
         i2c->TRISE = (pclk1_MHz * 3U) / 10U + 1U;
     }
 
     i2c->CR1 |= I2C_CR1_PE;
-
-    GPIO_ConfigPin(GPIOB, 6, GPIO_MODE_OUTPUT_10MHz, GPIO_CNF_OUT_AF_OD);
-    GPIO_ConfigPin(GPIOB, 7, GPIO_MODE_OUTPUT_10MHz, GPIO_CNF_OUT_AF_OD);
 }
+
+/* -------------------------------------------------------------------------- */
 
 I2C_Status I2C_Write(volatile I2C_TypeDef *i2c, uint8_t dev_addr,
                      const uint8_t *data, uint8_t len)
@@ -126,6 +164,8 @@ I2C_Status I2C_Write(volatile I2C_TypeDef *i2c, uint8_t dev_addr,
     return I2C_OK;
 }
 
+/* -------------------------------------------------------------------------- */
+
 I2C_Status I2C_Read(volatile I2C_TypeDef *i2c, uint8_t dev_addr,
                     uint8_t *data, uint8_t len)
 {
@@ -133,6 +173,38 @@ I2C_Status I2C_Read(volatile I2C_TypeDef *i2c, uint8_t dev_addr,
 
     if (len == 0) return I2C_OK;
 
+    if (len == 1) {
+        /*
+         * FIX: RM0008 §26.3.3 — đọc 1 byte:
+         * NACK và STOP phải được set TRƯỚC khi clear ADDR
+         * (tức là trước khi đọc SR2)
+         */
+        /* Chờ bus rảnh và phát START */
+        s = _wait_flag(&i2c->SR2, I2C_SR2_BUSY, 0);
+        if (s) return s;
+
+        i2c->CR1 |= I2C_CR1_START;
+        s = _wait_flag(&i2c->SR1, I2C_SR1_SB, 1);
+        if (s) return s;
+
+        i2c->DR = (uint8_t)((dev_addr << 1) | 0x01U);
+        s = _wait_flag(&i2c->SR1, I2C_SR1_ADDR, 1);
+        if (s) { _check_errors(i2c); return s; }
+
+        /* NACK ngay + STOP trước khi clear ADDR */
+        i2c->CR1 &= ~I2C_CR1_ACK;
+        (void)i2c->SR1;
+        (void)i2c->SR2;   /* clear ADDR */
+        _stop(i2c);
+
+        s = _wait_flag(&i2c->SR1, I2C_SR1_RXNE, 1);
+        if (s) return s;
+
+        data[0] = (uint8_t)i2c->DR;
+        return I2C_OK;
+    }
+
+    /* len >= 2: ACK trước rồi clear ADDR bình thường */
     i2c->CR1 |= I2C_CR1_ACK;
 
     s = _start(i2c, (uint8_t)((dev_addr << 1) | 0x01U));
@@ -140,6 +212,7 @@ I2C_Status I2C_Read(volatile I2C_TypeDef *i2c, uint8_t dev_addr,
 
     for (uint8_t i = 0; i < len; i++) {
         if (i == len - 1U) {
+            /* Byte cuối: NACK + STOP */
             i2c->CR1 &= ~I2C_CR1_ACK;
             _stop(i2c);
         }
@@ -152,6 +225,8 @@ I2C_Status I2C_Read(volatile I2C_TypeDef *i2c, uint8_t dev_addr,
     return I2C_OK;
 }
 
+/* -------------------------------------------------------------------------- */
+
 I2C_Status I2C_WriteReg(volatile I2C_TypeDef *i2c, uint8_t dev_addr,
                         uint8_t reg, uint8_t value)
 {
@@ -159,43 +234,91 @@ I2C_Status I2C_WriteReg(volatile I2C_TypeDef *i2c, uint8_t dev_addr,
     return I2C_Write(i2c, dev_addr, buf, 2);
 }
 
+/* -------------------------------------------------------------------------- */
+
 I2C_Status I2C_ReadReg(volatile I2C_TypeDef *i2c, uint8_t dev_addr,
                        uint8_t reg, uint8_t *value)
 {
     I2C_Status s;
 
+    /* Phase 1: gửi địa chỉ register */
     s = _start(i2c, (uint8_t)(dev_addr << 1));
     if (s) return s;
 
-    _wait_flag(&i2c->SR1, I2C_SR1_TXE, 1);
+    /* FIX: kiểm tra return value của _wait_flag */
+    s = _wait_flag(&i2c->SR1, I2C_SR1_TXE, 1);
+    if (s) { _stop(i2c); return s; }
     i2c->DR = reg;
-    _wait_flag(&i2c->SR1, I2C_SR1_BTF, 1);
+    s = _wait_flag(&i2c->SR1, I2C_SR1_BTF, 1);
+    if (s) { _stop(i2c); return s; }
 
-    i2c->CR1 |= I2C_CR1_ACK;
-    s = _repeated_start(i2c, (uint8_t)((dev_addr << 1) | 0x01U));
+    /* Phase 2: repeated start, đọc 1 byte (xử lý giống I2C_Read len==1) */
+    i2c->CR1 |= I2C_CR1_START;
+    s = _wait_flag(&i2c->SR1, I2C_SR1_SB, 1);
     if (s) return s;
 
+    i2c->DR = (uint8_t)((dev_addr << 1) | 0x01U);
+    s = _wait_flag(&i2c->SR1, I2C_SR1_ADDR, 1);
+    if (s) { _check_errors(i2c); return s; }
+
+    /* NACK + STOP trước khi clear ADDR (RM0008 §26.3.3) */
     i2c->CR1 &= ~I2C_CR1_ACK;
+    (void)i2c->SR1;
+    (void)i2c->SR2;
     _stop(i2c);
-    _wait_flag(&i2c->SR1, I2C_SR1_RXNE, 1);
+
+    s = _wait_flag(&i2c->SR1, I2C_SR1_RXNE, 1);
+    if (s) return s;
     *value = (uint8_t)i2c->DR;
 
     return I2C_OK;
 }
+
+/* -------------------------------------------------------------------------- */
 
 I2C_Status I2C_ReadRegs(volatile I2C_TypeDef *i2c, uint8_t dev_addr,
                         uint8_t reg, uint8_t *buf, uint8_t len)
 {
     I2C_Status s;
 
+    if (len == 0) return I2C_OK;
+
+    /* Phase 1: gửi địa chỉ register */
     s = _start(i2c, (uint8_t)(dev_addr << 1));
     if (s) return s;
 
-    _wait_flag(&i2c->SR1, I2C_SR1_TXE, 1);
+    /* FIX: kiểm tra return value của _wait_flag */
+    s = _wait_flag(&i2c->SR1, I2C_SR1_TXE, 1);
+    if (s) { _stop(i2c); return s; }
     i2c->DR = reg;
-    _wait_flag(&i2c->SR1, I2C_SR1_BTF, 1);
+    s = _wait_flag(&i2c->SR1, I2C_SR1_BTF, 1);
+    if (s) { _stop(i2c); return s; }
 
+    /* Phase 2: repeated start + đọc */
+    if (len == 1) {
+        /* Xử lý đặc biệt cho len==1 */
+        i2c->CR1 |= I2C_CR1_START;
+        s = _wait_flag(&i2c->SR1, I2C_SR1_SB, 1);
+        if (s) return s;
+
+        i2c->DR = (uint8_t)((dev_addr << 1) | 0x01U);
+        s = _wait_flag(&i2c->SR1, I2C_SR1_ADDR, 1);
+        if (s) { _check_errors(i2c); return s; }
+
+        i2c->CR1 &= ~I2C_CR1_ACK;
+        (void)i2c->SR1;
+        (void)i2c->SR2;
+        _stop(i2c);
+
+        s = _wait_flag(&i2c->SR1, I2C_SR1_RXNE, 1);
+        if (s) return s;
+        buf[0] = (uint8_t)i2c->DR;
+        return I2C_OK;
+    }
+
+    /* len >= 2 */
     i2c->CR1 |= I2C_CR1_ACK;
+
     s = _repeated_start(i2c, (uint8_t)((dev_addr << 1) | 0x01U));
     if (s) return s;
 
@@ -204,7 +327,8 @@ I2C_Status I2C_ReadRegs(volatile I2C_TypeDef *i2c, uint8_t dev_addr,
             i2c->CR1 &= ~I2C_CR1_ACK;
             _stop(i2c);
         }
-        _wait_flag(&i2c->SR1, I2C_SR1_RXNE, 1);
+        s = _wait_flag(&i2c->SR1, I2C_SR1_RXNE, 1);
+        if (s) return s;
         buf[i] = (uint8_t)i2c->DR;
     }
 
