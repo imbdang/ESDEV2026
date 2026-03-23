@@ -17,11 +17,11 @@ static void app_init(void)
     SysTick_Init_1ms(72000000);
     Motor_Init(72000000, 10000);
 
-    I2C_Init(I2C1, 36, 400);
+    // I2C_Init(I2C1, 36, 400);
 
-    MPU6050_ReadID(I2C1, &mpu_id);      
-    MPU6050_Init(I2C1, MPU6050_ACCEL_2G, MPU6050_GYRO_250);
-    delay_ms(30);
+    // MPU6050_ReadID(I2C1, &mpu_id);      
+    // MPU6050_Init(I2C1, MPU6050_ACCEL_2G, MPU6050_GYRO_250);
+    // delay_ms(30);
 
     /*
      * TCS34 is not connected — skip to avoid corrupting I2C bus.
@@ -38,7 +38,7 @@ void app_run(void)
 
     while (1)
     {
-        Motor_RunPulses(20, 700);
-        delay_ms(2000);
+        MotorA_Set(500);
+        MotorB_Set(500);
     }
 }

@@ -24,9 +24,9 @@ void MotorA_Set(int16_t speed)
 
 void MotorB_Set(int16_t speed)
 {
-    if (speed > 0) { GPIO_SetPin(GPIOB,10); GPIO_ClearPin(GPIOB,11); }
-    else if (speed < 0) { GPIO_ClearPin(GPIOB,10); GPIO_SetPin(GPIOB,11); speed = -speed; }
-    else { GPIO_ClearPin(GPIOB,10); GPIO_ClearPin(GPIOB,11); }
+    if (speed > 0) { GPIO_SetPin(GPIOA,2); GPIO_ClearPin(GPIOA,3); }
+    else if (speed < 0) { GPIO_ClearPin(GPIOA,2); GPIO_SetPin(GPIOA,3); speed = -speed; }
+    else { GPIO_ClearPin(GPIOA,2); GPIO_ClearPin(GPIOA,3); }
 
     TIM1_CH2_SetDutyPermille((uint16_t)((speed > 1000) ? 1000 : speed));
 }

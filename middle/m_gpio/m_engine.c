@@ -21,8 +21,8 @@ void TB6612_InitPins(void)
 
     GPIO_ConfigOutputPP(TB6612_AIN1_PORT, 0);   // PB0
     GPIO_ConfigOutputPP(TB6612_AIN2_PORT, 1);   // PB1
-    GPIO_ConfigOutputPP(TB6612_BIN1_PORT, 10);  // PB10
-    GPIO_ConfigOutputPP(TB6612_BIN2_PORT, 11);  // PB11
+    GPIO_ConfigOutputPP(TB6612_BIN1_PORT, 2);  // PA2
+    GPIO_ConfigOutputPP(TB6612_BIN2_PORT, 3);  // PA3
     GPIO_ConfigOutputPP(TB6612_STBY_PORT, 12);  // PB12
 
     GPIO_ConfigAFPP50MHz(TB6612_PWMA_PORT, 8);  // PA8 TIM1_CH1
@@ -30,8 +30,8 @@ void TB6612_InitPins(void)
 
     GPIO_ClearPin(TB6612_AIN1_PORT, 0);
     GPIO_ClearPin(TB6612_AIN2_PORT, 1);
-    GPIO_ClearPin(TB6612_BIN1_PORT, 10);
-    GPIO_ClearPin(TB6612_BIN2_PORT, 11);
+    GPIO_ClearPin(TB6612_BIN1_PORT, 2);
+    GPIO_ClearPin(TB6612_BIN2_PORT, 3);
 
     GPIO_SetPin(TB6612_STBY_PORT, 12);
 }

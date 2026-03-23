@@ -14,11 +14,11 @@
 #define TB6612_AIN2_PORT      GPIOB
 #define TB6612_AIN2_PIN       GPIO_PIN_1
 
-#define TB6612_BIN1_PORT      GPIOB
-#define TB6612_BIN1_PIN       GPIO_PIN_10
+#define TB6612_BIN1_PORT      GPIOA
+#define TB6612_BIN1_PIN       GPIO_PIN_2
 
-#define TB6612_BIN2_PORT      GPIOB
-#define TB6612_BIN2_PIN       GPIO_PIN_11
+#define TB6612_BIN2_PORT      GPIOA
+#define TB6612_BIN2_PIN       GPIO_PIN_3
 
 #define TB6612_STBY_PORT      GPIOB
 #define TB6612_STBY_PIN       GPIO_PIN_12
@@ -40,6 +40,8 @@
 
 #define I2C1_SDA_PORT         GPIOB
 #define I2C1_SDA_PIN          GPIO_PIN_7   // I2C1_SDA
+
+// B10 B11 se su dung cho sensor 2
 
 
 // ===================== Optional Interrupt Pins (if you want) =====================
