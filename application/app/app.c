@@ -1,18 +1,15 @@
 #include "app.h"
+#include "config.h"
 #include "m_clock.h"
 #include "m_gpio.h"
-#include "m_sensor.h"
-#include "m_mpu.h"
+#include "state_machine.h"
 #include "systick.h"
 
-static uint8_t      tcs_id_1;
-static TCS34_Data   tcs_1;
+Sensor_result sensor_result = {0};
 
-static uint8_t      tcs_id_2;
-static TCS34_Data   tcs_2;
+Color_table  target_color;
 
-static uint8_t      mpu_id;
-static MPU6050_Data mpu;
+State_car    current_state;
 
 static void app_init(void)
 {
@@ -27,23 +24,23 @@ static void app_init(void)
     // MPU6050_Init(I2C1, MPU6050_ACCEL_2G, MPU6050_GYRO_250);
     // delay_ms(30);
 
-    TCS34_ReadID(I2C1, &tcs_id_1);  
-    TCS34_Init(I2C1, 0xF6, TCS34_GAIN_1X);
+    TCS34_Init(I2C1, CFG_TCS34_ATIME, CFG_TCS34_GAIN);
+    TCS34_Init(I2C2, CFG_TCS34_ATIME, CFG_TCS34_GAIN);
     delay_ms(30);
 
-    TCS34_ReadID(I2C2, &tcs_id_2);  
-    TCS34_Init(I2C2, 0xF6, TCS34_GAIN_1X);
-    delay_ms(30);
+    TCS34_ReadID(I2C1, I2C2, &sensor_result);
+    StateMachine_Init(C_RED);
 }
 
 void app_run(void)
 {
     app_init();
+    delay_ms(30);
 
     while (1)
     {
-        TCS34_Read(I2C1, &tcs_1);
-        TCS34_Read(I2C2, &tcs_2);
-        delay_ms(500);
+        a_read_sensor();
+        StateMachine_Update();
+        delay_ms(10);
     }
 }

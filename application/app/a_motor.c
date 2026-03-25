@@ -6,6 +6,16 @@
 #include "m_mpu.h"
 #include "systick.h"
 
+static uint16_t motor_limit_speed(int16_t speed)
+{
+    uint16_t magnitude;
+
+    if (speed < 0) magnitude = (uint16_t)(-speed);
+    else magnitude = (uint16_t)speed;
+
+    return (uint16_t)((magnitude > 1000U) ? 1000U : magnitude);
+}
+
 void Motor_Init(uint32_t core_clk_hz, uint32_t pwm_hz)
 {
     TB6612_InitPins();           
@@ -19,7 +29,7 @@ void MotorA_Set(int16_t speed)
     else if (speed < 0) { GPIO_ClearPin(GPIOB,0); GPIO_SetPin(GPIOB,1); speed = -speed; }
     else { GPIO_ClearPin(GPIOB,0); GPIO_ClearPin(GPIOB,1); }
 
-    TIM1_CH1_SetDutyPermille((uint16_t)((speed > 1000) ? 1000 : speed));
+    TIM1_CH1_SetDutyPermille(motor_limit_speed(speed));
 }
 
 void MotorB_Set(int16_t speed)
@@ -28,7 +38,31 @@ void MotorB_Set(int16_t speed)
     else if (speed < 0) { GPIO_ClearPin(GPIOA,2); GPIO_SetPin(GPIOA,3); speed = -speed; }
     else { GPIO_ClearPin(GPIOA,2); GPIO_ClearPin(GPIOA,3); }
 
-    TIM1_CH2_SetDutyPermille((uint16_t)((speed > 1000) ? 1000 : speed));
+    TIM1_CH2_SetDutyPermille(motor_limit_speed(speed));
+}
+
+void Motor_Stop(void)
+{
+    MotorA_Set(0);
+    MotorB_Set(0);
+}
+
+void Motor_Forward(int16_t speed)
+{
+    MotorA_Set(speed);
+    MotorB_Set(speed);
+}
+
+void Motor_TurnLeft(int16_t left_speed, int16_t right_speed)
+{
+    MotorA_Set(left_speed);
+    MotorB_Set(right_speed);
+}
+
+void Motor_TurnRight(int16_t left_speed, int16_t right_speed)
+{
+    MotorA_Set(left_speed);
+    MotorB_Set(right_speed);
 }
 
 void Motor_RunPulses(int32_t pulses, int16_t speed)
@@ -44,6 +78,5 @@ void Motor_RunPulses(int32_t pulses, int16_t speed)
     while (EncoderA_GetCount() < pulses || EncoderB_GetCount() < pulses)
         ;
 
-    MotorA_Set(0);
-    MotorB_Set(0);
+    Motor_Stop();
 }

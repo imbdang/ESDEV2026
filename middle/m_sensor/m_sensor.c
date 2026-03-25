@@ -14,6 +14,32 @@
 #define TCS34_ENABLE_PON    0x01U   /* power on    */
 #define TCS34_ENABLE_AEN    0x02U   /* RGBC enable */
 
+static I2C_Status TCS34_ReadID_Single(volatile I2C_TypeDef *i2c, uint8_t *id)
+{
+    if (id == 0) return I2C_ERR_BUS;
+    return I2C_ReadReg(i2c, TCS34_ADDR, TCS34_CMD | TCS34_REG_ID, id);
+}
+
+static I2C_Status TCS34_ReadSingle(volatile I2C_TypeDef *i2c, TCS34_Data *out)
+{
+    uint8_t raw[8];
+    I2C_Status s;
+
+    if (out == 0) return I2C_ERR_BUS;
+
+    s = I2C_ReadRegs(i2c, TCS34_ADDR,
+                     TCS34_CMD | TCS34_CMD_AUTO | TCS34_REG_CDATA,
+                     raw, 8);
+    if (s) return s;
+
+    out->c = (uint16_t)((raw[1] << 8) | raw[0]);
+    out->r = (uint16_t)((raw[3] << 8) | raw[2]);
+    out->g = (uint16_t)((raw[5] << 8) | raw[4]);
+    out->b = (uint16_t)((raw[7] << 8) | raw[6]);
+
+    return I2C_OK;
+}
+
 /* ============================== Public API ================================== */
 
 I2C_Status TCS34_Init(volatile I2C_TypeDef *i2c, uint8_t atime, TCS34_Gain gain)
@@ -41,40 +67,57 @@ I2C_Status TCS34_Init(volatile I2C_TypeDef *i2c, uint8_t atime, TCS34_Gain gain)
     return s;
 }
 
-I2C_Status TCS34_ReadID(volatile I2C_TypeDef *i2c, uint8_t *id)
+I2C_Status TCS34_ReadID(volatile I2C_TypeDef *i2c_1,
+                        volatile I2C_TypeDef *i2c_2,
+                        Sensor_result *result)
 {
-    return I2C_ReadReg(i2c, TCS34_ADDR, TCS34_CMD | TCS34_REG_ID, id);
-}
-
-I2C_Status TCS34_Read(volatile I2C_TypeDef *i2c, TCS34_Data *out)
-{
-    uint8_t raw[8];
     I2C_Status s;
+    if (result == 0) return I2C_ERR_BUS;
 
-    s = I2C_ReadRegs(i2c, TCS34_ADDR,
-                     TCS34_CMD | TCS34_CMD_AUTO | TCS34_REG_CDATA,
-                     raw, 8);
+    s = TCS34_ReadID_Single(i2c_1, &result->Tcs_ID_1);
     if (s) return s;
 
-    out->c = (uint16_t)((raw[1] << 8) | raw[0]);
-    out->r = (uint16_t)((raw[3] << 8) | raw[2]);
-    out->g = (uint16_t)((raw[5] << 8) | raw[4]);
-    out->b = (uint16_t)((raw[7] << 8) | raw[6]);
-
-    return I2C_OK;
+    s = TCS34_ReadID_Single(i2c_2, &result->Tcs_ID_2);
+    return s;
 }
 
-uint8_t TCS34_DetectColor(TCS34_Data *d)
+I2C_Status TCS34_Read(volatile I2C_TypeDef *i2c_1,
+                      volatile I2C_TypeDef *i2c_2,
+                      Sensor_result *result)
 {
-    if (d->c < 15) return 0;   /* too dark, unreliable */
+    I2C_Status s;
+    if (result == 0) return I2C_ERR_BUS;
 
-    uint8_t r = (d->r * 100) / d->c;
-    uint8_t g = (d->g * 100) / d->c;
-    uint8_t b = (d->b * 100) / d->c;
+    s = TCS34_ReadSingle(i2c_1, &result->Data_SS_1);
+    if (s) return s;
 
-    if (r > g && r > b && r > 40) return 1;   /* red   */
-    if (g > r && g > b && g > 30) return 2;   /* green */
-    if (b > r && b > g && b > 25) return 3;   /* blue  */
+    s = TCS34_ReadSingle(i2c_2, &result->Data_SS_2);
+    return s;
+}
 
-    return 0;   /* white, black, or ambiguous */
+static Color_table TCS34_DetectColorSingle(const TCS34_Data *d)
+{
+    uint16_t r;
+    uint16_t g;
+    uint16_t b;
+
+    if ((d == 0) || (d->c < 15)) return C_NONE;   /* too dark, unreliable */
+
+    r = (uint16_t)(((uint32_t)d->r * 100U) / d->c);
+    g = (uint16_t)(((uint32_t)d->g * 100U) / d->c);
+    b = (uint16_t)(((uint32_t)d->b * 100U) / d->c);
+
+    if (r > g && r > b && r > 40U) return C_RED;
+    if (g > r && g > b && g > 30U) return C_GREEN;
+    if (b > r && b > g && b > 25U) return C_BLUE;
+
+    return C_NONE;
+}
+
+void TCS34_DetectColor(Sensor_result *result)
+{
+    if (result == 0) return;
+
+    result->Color_SS_1 = TCS34_DetectColorSingle(&result->Data_SS_1);
+    result->Color_SS_2 = TCS34_DetectColorSingle(&result->Data_SS_2);
 }

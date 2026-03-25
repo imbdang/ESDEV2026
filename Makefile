@@ -55,6 +55,7 @@ CFLAGS := -mcpu=$(MCU) \
           -ffreestanding \
           -fdata-sections -ffunction-sections \
           -DSTM32F10X_MD \
+          -include config.h \
           -I. \
           $(addprefix -I,$(COMPONENTS_ADD_INCLUDES)) \
           -MMD -MP
@@ -111,3 +112,9 @@ debug:
     -ex "load" \
     -ex "break main" \
     -ex "continue"
+
+debug_attach:
+	gdb-multiarch $(BUILD_DIR)/$(PROJECT).elf \
+    -ex "set remote interrupt-on-connect off" \
+    -ex "target extended-remote localhost:3333" \
+    -ex "monitor halt"

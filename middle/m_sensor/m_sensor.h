@@ -24,6 +24,25 @@ typedef struct {
     uint16_t b;   /* blue   */
 } TCS34_Data;
 
+typedef enum 
+{
+    C_NONE = 0, //white maybe
+    C_RED,
+    C_GREEN,
+    C_BLUE,
+    C_YEALLOW,
+} Color_table;
+
+typedef struct {
+    uint8_t     Tcs_ID_1;
+    TCS34_Data  Data_SS_1;
+    Color_table Color_SS_1;
+
+    uint8_t     Tcs_ID_2;
+    TCS34_Data  Data_SS_2;
+    Color_table Color_SS_2;
+} Sensor_result;
+
 /* ============================== Public API ================================== */
 
 /*
@@ -39,14 +58,17 @@ I2C_Status TCS34_Init(volatile I2C_TypeDef *i2c, uint8_t atime, TCS34_Gain gain)
 /*
  * TCS34_ReadID - read chip ID register (0x44 or 0x4D = OK)
  */
-I2C_Status TCS34_ReadID(volatile I2C_TypeDef *i2c, uint8_t *id);
+I2C_Status TCS34_ReadID(volatile I2C_TypeDef *i2c_1,
+                        volatile I2C_TypeDef *i2c_2,
+                        Sensor_result *result);
 
 /*
  * TCS34_Read  - burst read all 4 channels into TCS34_Data
  */
-I2C_Status TCS34_Read(volatile I2C_TypeDef *i2c, TCS34_Data *out);
+I2C_Status TCS34_Read(volatile I2C_TypeDef *i2c_1,
+                      volatile I2C_TypeDef *i2c_2,
+                      Sensor_result *result);
 
-
-uint8_t TCS34_DetectColor(TCS34_Data *d);
+void TCS34_DetectColor(Sensor_result *result);
 
 #endif /*<! __M_TCS34_H__ */
