@@ -7,12 +7,17 @@
 
 Sensor_result sensor_result = {0};
 
-Color_table  target_color;
-
-State_car    current_state;
-
 static void app_init(void)
 {
+    static const Color_table target_order[] = {
+        C_RED,
+        C_BLUE,
+        C_GREEN,
+        C_BLUE,
+        C_GREEN,
+        C_RED,
+    };
+
     M_CLOCK_Set72MHz_HSE_PLL9();
     SysTick_Init_1ms(72000000);
     Motor_Init(72000000, 10000);
@@ -29,18 +34,18 @@ static void app_init(void)
     delay_ms(30);
 
     TCS34_ReadID(I2C1, I2C2, &sensor_result);
-    StateMachine_Init(C_RED);
+    StateMachine_Init(target_order,
+                      (uint8_t)(sizeof(target_order) / sizeof(target_order[0])));
 }
 
 void app_run(void)
 {
     app_init();
     delay_ms(30);
-
     while (1)
     {
         a_read_sensor();
         StateMachine_Update();
-        delay_ms(10);
+        
     }
 }
