@@ -15,7 +15,7 @@ static void app_init(void)
         C_GREEN,
         C_BLUE,
         C_GREEN,
-        C_RED,
+        // C_RED,
     };
 
     M_CLOCK_Set72MHz_HSE_PLL9();
@@ -41,11 +41,10 @@ static void app_init(void)
 void app_run(void)
 {
     app_init();
-    delay_ms(30);
+    delay_ms(10);
     while (1)
     {
         a_read_sensor();
         StateMachine_Update();
-        
     }
 }

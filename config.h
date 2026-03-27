@@ -33,11 +33,13 @@
 
 
 /* ============================== Motor speed ================================ */
-#define CFG_SM_FORWARD_SPEED         (-360)
-#define CFG_SM_TURN_INNER_SPEED      (-150)
-#define CFG_SM_TURN_OUTER_SPEED      (-220)
-#define CFG_SM_ENTRY_TURN_OUTER_SPEED (-820)
-#define CFG_SM_LOST_LEFT_SPEED       (220)
-#define CFG_SM_LOST_RIGHT_SPEED      (-220)
+#define CFG_SM_FORWARD_SPEED            (-600)
+#define CFG_SM_TURN_INNER_SPEED         (-150)
+#define CFG_SM_TURN_OUTER_SPEED         (-220)
+#define CFG_SM_ENTRY_TURN_OUTER_SPEED   (-820)
+#define CFG_SM_LOST_LEFT_SPEED          (220)
+#define CFG_SM_LOST_RIGHT_SPEED         (-220)
+
+#define CFG_TIME_TURN                   (450) 
 
 #endif /* __CONFIG_H__ */

@@ -5,6 +5,7 @@
 #include "m_encoder.h"
 #include "m_mpu.h"
 #include "systick.h"
+#include "config.h"
 
 static uint16_t motor_limit_speed(int16_t speed)
 {
@@ -63,6 +64,20 @@ void Motor_TurnRight(int16_t left_speed, int16_t right_speed)
 {
     MotorA_Set(left_speed);
     MotorB_Set(right_speed);
+}
+
+void Motor_Left90(void)
+{
+    MotorA_Set(-400);
+    MotorB_Set(400);
+    delay_ms(CFG_TIME_TURN);
+}
+
+void Motor_Right90(void)
+{
+    MotorB_Set(400);
+    MotorA_Set(-400);
+    delay_ms(CFG_TIME_TURN);
 }
 
 void Motor_RunPulses(int32_t pulses, int16_t speed)

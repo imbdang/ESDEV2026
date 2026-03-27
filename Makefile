@@ -55,7 +55,6 @@ CFLAGS := -mcpu=$(MCU) \
           -ffreestanding \
           -fdata-sections -ffunction-sections \
           -DSTM32F10X_MD \
-          -include config.h \
           -I. \
           $(addprefix -I,$(COMPONENTS_ADD_INCLUDES)) \
           -MMD -MP
@@ -69,7 +68,7 @@ LDFLAGS := -T$(LINKER_DIR)/$(LD_SCRIPT) \
 ####################################
 #           MAKE RULES
 ####################################
-.PHONY: all clean flash bin hex size
+.PHONY: all clean flash erase bin hex size
 
 all: $(BUILD_DIR)/$(PROJECT).elf $(BUILD_DIR)/$(PROJECT).bin $(BUILD_DIR)/$(PROJECT).hex size
 
@@ -104,6 +103,10 @@ clean:
 flash: $(BUILD_DIR)/$(PROJECT).bin
 	st-flash write $< 0x8000000
 	@echo "Flash complete"
+
+erase:
+	st-flash erase
+	@echo "Erase complete"
 
 debug:
 	gdb-multiarch $(BUILD_DIR)/$(PROJECT).elf \

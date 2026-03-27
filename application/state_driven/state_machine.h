@@ -11,10 +11,17 @@ typedef enum {
     STATE_FORWARD,
     STATE_TURN_LEFT,
     STATE_TURN_RIGHT,
-    STATE_ENTER_LEFT,
-    STATE_ENTER_RIGHT,
+    STATE_ENTRY_CHECKPOINT,
     STATE_LOST
 } State_car;
+
+typedef enum {
+    CHECK_POINT_1 = 0,
+    CHECK_POINT_2,
+    CHECK_POINT_3,
+    CHECK_POINT_4,
+    NONE_CHECK,
+} Checkpoint;
 
 extern Color_table target_colors[STATE_MACHINE_MAX_TARGETS];
 extern uint8_t target_color_count;
@@ -22,6 +29,7 @@ extern uint8_t target_color_index;
 extern Color_table current_target;
 extern Color_table target_color;
 extern State_car current_state;
+extern Checkpoint current_checkpoint;
 
 void StateMachine_Init(const Color_table *targets, uint8_t count);
 Color_table StateMachine_GetCurrentTarget(void);
