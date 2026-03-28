@@ -41,7 +41,7 @@ static void app_init(void)
 void app_run(void)
 {
     app_init();
-    delay_ms(10);
+    delay_ms(500);
     while (1)
     {
         a_read_sensor();

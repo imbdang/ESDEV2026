@@ -71,6 +71,7 @@ void Motor_Left90(void)
     MotorA_Set(-400);
     MotorB_Set(400);
     delay_ms(CFG_TIME_TURN);
+    Motor_Stop();
 }
 
 void Motor_Right90(void)
@@ -78,6 +79,7 @@ void Motor_Right90(void)
     MotorB_Set(400);
     MotorA_Set(-400);
     delay_ms(CFG_TIME_TURN);
+    Motor_Stop();
 }
 
 void Motor_RunPulses(int32_t pulses, int16_t speed)

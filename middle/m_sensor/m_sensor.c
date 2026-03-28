@@ -108,7 +108,7 @@ static Color_table TCS34_DetectColorSingle(const TCS34_Data *d)
     b = (uint16_t)(((uint32_t)d->b * 100U) / d->c);
 
     if (r > g && r > b && r > 40U) return C_RED;
-    if (g > r && g > b && g > 30U) return C_GREEN;
+    if (g > r && g > b && g > 40U) return C_GREEN;
     if (b > r && b > g && b > 25U) return C_BLUE;
 
     return C_NONE;
