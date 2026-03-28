@@ -23,6 +23,8 @@ void Motor_TurnRight(int16_t left_speed, int16_t right_speed);
 void Motor_RunPulses(int32_t pulses, int16_t speed);
 void Motor_Left90(void);
 void Motor_Right90(void);
+void Motor_Left45(void);
+void Motor_Right45(void);
 
 
 /* ============ a_sensor.c ============ */

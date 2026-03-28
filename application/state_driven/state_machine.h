@@ -21,6 +21,7 @@ typedef enum {
     CHECK_POINT_2,
     CHECK_POINT_3,
     CHECK_POINT_4,
+    CHECK_POINT_5,
     NONE_CHECK,
 } Checkpoint;
 

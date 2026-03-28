@@ -52,15 +52,28 @@ static void state_machine_apply_checkpoint_entry_action(void)
         break;
 
     case CHECK_POINT_2:
+        Motor_Stop();
+        delay_ms(100);
+        Motor_Right45();
         break;
 
     case CHECK_POINT_3:
+        Motor_Stop();
+        delay_ms(100);
         Motor_Right90();
         break;
 
     case CHECK_POINT_4:
+        Motor_Stop();
+        delay_ms(100);
         Motor_Right90();
-        current_checkpoint = NONE_CHECK;
+        current_checkpoint = CHECK_POINT_5;
+        StateMachine_AdvanceTarget();
+        break;
+
+    case CHECK_POINT_5:
+        Motor_Stop();
+        while (1) {}
         break;
 
     default:

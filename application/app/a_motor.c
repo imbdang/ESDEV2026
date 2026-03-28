@@ -82,6 +82,23 @@ void Motor_Right90(void)
     Motor_Stop();
 }
 
+void Motor_Left45(void)
+{
+    MotorA_Set(-400);
+    MotorB_Set(400);
+    delay_ms(CFG_TIME_TURN45);
+    Motor_Stop();
+}
+
+void Motor_Right45(void)
+{
+    MotorB_Set(400);
+    MotorA_Set(-400);
+    delay_ms(CFG_TIME_TURN45);
+    Motor_Stop();
+}
+
+
 void Motor_RunPulses(int32_t pulses, int16_t speed)
 {
     if (pulses <= 0 || speed == 0) return;

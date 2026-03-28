@@ -15,7 +15,8 @@ static void app_init(void)
         C_GREEN,
         C_BLUE,
         C_GREEN,
-        // C_RED,
+        C_RED,
+        C_YEALLOW,
     };
 
     M_CLOCK_Set72MHz_HSE_PLL9();

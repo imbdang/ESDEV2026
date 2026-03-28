@@ -70,5 +70,6 @@ I2C_Status TCS34_Read(volatile I2C_TypeDef *i2c_1,
                       Sensor_result *result);
 
 void TCS34_DetectColor(Sensor_result *result);
+void TCS34_DetectColorPostCP4(Sensor_result *result);
 
 #endif /*<! __M_TCS34_H__ */

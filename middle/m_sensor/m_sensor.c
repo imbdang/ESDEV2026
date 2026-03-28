@@ -121,3 +121,37 @@ void TCS34_DetectColor(Sensor_result *result)
     result->Color_SS_1 = TCS34_DetectColorSingle(&result->Data_SS_1);
     result->Color_SS_2 = TCS34_DetectColorSingle(&result->Data_SS_2);
 }
+
+static Color_table TCS34_DetectColorPostCP4Single(const TCS34_Data *d)
+{
+    uint16_t r;
+    uint16_t g;
+    uint16_t b;
+    int16_t  diff;
+
+    if ((d == 0) || (d->c < 15)) return C_NONE;
+
+    r = (uint16_t)(((uint32_t)d->r * 100U) / d->c);
+    g = (uint16_t)(((uint32_t)d->g * 100U) / d->c);
+    b = (uint16_t)(((uint32_t)d->b * 100U) / d->c);
+
+    /* Yellow: r and g both elevated, b < 25% of (r+g), neither dominates strongly */
+    if ((r > 25U) && (g > 25U) && ((b * 4U) < (uint16_t)(r + g))) {
+        diff = (int16_t)r - (int16_t)g;
+        if (diff < 0) diff = -diff;
+        if ((uint16_t)diff < 13U) return C_YEALLOW;
+    }
+
+    /* Red: r clearly dominant */
+    if ((r > 35U) && (r > (uint16_t)(g + 10U))) return C_RED;
+
+    return C_NONE;
+}
+
+void TCS34_DetectColorPostCP4(Sensor_result *result)
+{
+    if (result == 0) return;
+
+    result->Color_SS_1 = TCS34_DetectColorPostCP4Single(&result->Data_SS_1);
+    result->Color_SS_2 = TCS34_DetectColorPostCP4Single(&result->Data_SS_2);
+}
