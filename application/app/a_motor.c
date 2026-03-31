@@ -1,43 +1,71 @@
 #include <stdint.h>
 
-#include "m_gpio.h"
-#include "m_timer1.h"
-#include "m_encoder.h"
-#include "m_mpu.h"
-#include "systick.h"
 #include "config.h"
+#include "m_encoder.h"
+#include "m_gpio.h"
+#include "m_mpu.h"
+#include "m_timer1.h"
+#include "systick.h"
 
 static uint16_t motor_limit_speed(int16_t speed)
 {
     uint16_t magnitude;
 
-    if (speed < 0) magnitude = (uint16_t)(-speed);
-    else magnitude = (uint16_t)speed;
+    if (speed < 0)
+        magnitude = (uint16_t)(-speed);
+    else
+        magnitude = (uint16_t)speed;
 
     return (uint16_t)((magnitude > 1000U) ? 1000U : magnitude);
 }
 
 void Motor_Init(uint32_t core_clk_hz, uint32_t pwm_hz)
 {
-    TB6612_InitPins();           
-    TIM1_PWM_Init(core_clk_hz, pwm_hz); 
+    TB6612_InitPins();
+    TIM1_PWM_Init(core_clk_hz, pwm_hz);
     Encoder_Init();
 }
 
 void MotorA_Set(int16_t speed)
 {
-    if (speed > 0) { GPIO_SetPin(GPIOB,0); GPIO_ClearPin(GPIOB,1); }
-    else if (speed < 0) { GPIO_ClearPin(GPIOB,0); GPIO_SetPin(GPIOB,1); speed = -speed; }
-    else { GPIO_ClearPin(GPIOB,0); GPIO_ClearPin(GPIOB,1); }
+    if (speed > 0)
+    {
+        GPIO_SetPin(GPIOB, 0);
+        GPIO_ClearPin(GPIOB, 1);
+    }
+    else if (speed < 0)
+    {
+        GPIO_ClearPin(GPIOB, 0);
+        GPIO_SetPin(GPIOB, 1);
+        speed = -speed;
+    }
+    else
+    {
+        GPIO_ClearPin(GPIOB, 0);
+        GPIO_ClearPin(GPIOB, 1);
+    }
 
     TIM1_CH1_SetDutyPermille(motor_limit_speed(speed));
 }
 
 void MotorB_Set(int16_t speed)
 {
-    if (speed > 0) { GPIO_SetPin(GPIOA,2); GPIO_ClearPin(GPIOA,3); }
-    else if (speed < 0) { GPIO_ClearPin(GPIOA,2); GPIO_SetPin(GPIOA,3); speed = -speed; }
-    else { GPIO_ClearPin(GPIOA,2); GPIO_ClearPin(GPIOA,3); }
+    if (speed > 0)
+    {
+        GPIO_SetPin(GPIOA, 2);
+        GPIO_ClearPin(GPIOA, 3);
+    }
+    else if (speed < 0)
+    {
+        GPIO_ClearPin(GPIOA, 2);
+        GPIO_SetPin(GPIOA, 3);
+        speed = -speed;
+    }
+    else
+    {
+        GPIO_ClearPin(GPIOA, 2);
+        GPIO_ClearPin(GPIOA, 3);
+    }
 
     TIM1_CH2_SetDutyPermille(motor_limit_speed(speed));
 }
@@ -98,10 +126,10 @@ void Motor_Right45(void)
     Motor_Stop();
 }
 
-
 void Motor_RunPulses(int32_t pulses, int16_t speed)
 {
-    if (pulses <= 0 || speed == 0) return;
+    if (pulses <= 0 || speed == 0)
+        return;
 
     EncoderA_ResetCount();
     EncoderB_ResetCount();

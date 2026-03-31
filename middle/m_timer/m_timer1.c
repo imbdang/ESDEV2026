@@ -3,8 +3,10 @@
 
 static uint16_t clamp_u16(uint16_t x, uint16_t lo, uint16_t hi)
 {
-    if (x < lo) return lo;
-    if (x > hi) return hi;
+    if (x < lo)
+        return lo;
+    if (x > hi)
+        return hi;
     return x;
 }
 
@@ -12,19 +14,24 @@ void TIM1_PWM_Init(uint32_t core_clk_hz, uint32_t pwm_hz)
 {
     RCC_APB2_Enable(RCC_APB2ENR_TIM1EN);
 
-    if (pwm_hz == 0) pwm_hz = 1000;
+    if (pwm_hz == 0)
+        pwm_hz = 1000;
 
     /* calc PSC/ARR in middle */
     uint32_t psc = (core_clk_hz / 1000000U);
-    if (psc == 0) psc = 1;
+    if (psc == 0)
+        psc = 1;
     psc -= 1U;
-    if (psc > 0xFFFF) psc = 0xFFFF;
+    if (psc > 0xFFFF)
+        psc = 0xFFFF;
 
     uint32_t tim_clk = core_clk_hz / (psc + 1U);
     uint32_t arr = tim_clk / pwm_hz;
-    if (arr == 0) arr = 1;
+    if (arr == 0)
+        arr = 1;
     arr -= 1U;
-    if (arr > 0xFFFF) arr = 0xFFFF;
+    if (arr > 0xFFFF)
+        arr = 0xFFFF;
 
     /* apply via hardware APIs */
     TIM1_Stop();

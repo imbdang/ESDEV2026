@@ -5,7 +5,8 @@
 #include <stdint.h>
 
 /* ====================================== RCC REGISTER ======================================= */
-typedef struct{
+typedef struct
+{
     volatile uint32_t CR;
     volatile uint32_t CFGR;
     volatile uint32_t CIR;
@@ -18,23 +19,22 @@ typedef struct{
     volatile uint32_t CSR;
 } RCC_TypeDef;
 
-#define RCC ((volatile RCC_TypeDef*)0x40021000)
+#define RCC ((volatile RCC_TypeDef *)0x40021000)
 
 #define RCC_APB2ENR (RCC->APB2ENR)
 #define RCC_APB1ENR (RCC->APB1ENR)
 
 /*<! GPIOx */
-#define RCC_APB2ENR_AFIOEN     (1U << 0)
-#define RCC_APB2ENR_IOPAEN     (1U << 2)
-#define RCC_APB2ENR_IOPBEN     (1U << 3)
-#define RCC_APB2ENR_IOPCEN     (1U << 4)
-#define RCC_APB2ENR_IOPDEN     (1U << 5)
-#define RCC_APB2ENR_IOPEEN     (1U << 6)
-#define RCC_APB2ENR_IOPFEN     (1U << 7)
-#define RCC_APB2ENR_IOPGEN     (1U << 8)
-#define RCC_APB2ENR_TIM1EN     (1U << 11)
-#define RCC_APB2ENR_USART1EN   (1U << 14)
-
+#define RCC_APB2ENR_AFIOEN (1U << 0)
+#define RCC_APB2ENR_IOPAEN (1U << 2)
+#define RCC_APB2ENR_IOPBEN (1U << 3)
+#define RCC_APB2ENR_IOPCEN (1U << 4)
+#define RCC_APB2ENR_IOPDEN (1U << 5)
+#define RCC_APB2ENR_IOPEEN (1U << 6)
+#define RCC_APB2ENR_IOPFEN (1U << 7)
+#define RCC_APB2ENR_IOPGEN (1U << 8)
+#define RCC_APB2ENR_TIM1EN (1U << 11)
+#define RCC_APB2ENR_USART1EN (1U << 14)
 
 void RCC_HSE_On(void);
 void RCC_HSE_Off(void);

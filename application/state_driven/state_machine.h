@@ -1,13 +1,14 @@
 #ifndef __STATE_MACHINE_H__
 #define __STATE_MACHINE_H__
 
-#include <stdint.h>
 #include "m_sensor.h"
+#include <stdint.h>
 
-#define STATE_MACHINE_MAX_TARGETS    8U
+#define STATE_MACHINE_MAX_TARGETS 8U
 #define STATE_MACHINE_ENTRY_LOG_SIZE 6U
 
-typedef enum {
+typedef enum
+{
     STATE_IDLE = 0,
     STATE_FORWARD,
     STATE_TURN_LEFT,
@@ -16,7 +17,8 @@ typedef enum {
     STATE_LOST
 } State_car;
 
-typedef enum {
+typedef enum
+{
     CHECK_POINT_1 = 0,
     CHECK_POINT_2,
     CHECK_POINT_3,
@@ -25,10 +27,11 @@ typedef enum {
     NONE_CHECK,
 } Checkpoint;
 
-typedef struct {
+typedef struct
+{
     Sensor_result entries[STATE_MACHINE_ENTRY_LOG_SIZE];
-    uint8_t       count;
-    uint8_t       next_index;
+    uint8_t count;
+    uint8_t next_index;
 } CheckpointLog;
 
 extern Color_table target_colors[STATE_MACHINE_MAX_TARGETS];

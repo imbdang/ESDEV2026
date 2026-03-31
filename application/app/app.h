@@ -1,8 +1,8 @@
 #ifndef __APP_H__
 #define __APP_H__
 
-#include <stdint.h>
 #include "m_sensor.h"
+#include <stdint.h>
 // #include "m_mpu.h"
 
 extern Sensor_result sensor_result;
@@ -25,7 +25,6 @@ void Motor_Left90(void);
 void Motor_Right90(void);
 void Motor_Left45(void);
 void Motor_Right45(void);
-
 
 /* ============ a_sensor.c ============ */
 void a_read_sensor(void);

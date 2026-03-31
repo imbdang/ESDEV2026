@@ -26,7 +26,7 @@ static void app_init(void)
     I2C_Init(I2C1, 36, 400);
     I2C_Init(I2C2, 36, 400);
 
-    // MPU6050_ReadID(I2C1, &mpu_id);      
+    // MPU6050_ReadID(I2C1, &mpu_id);
     // MPU6050_Init(I2C1, MPU6050_ACCEL_2G, MPU6050_GYRO_250);
     // delay_ms(30);
 

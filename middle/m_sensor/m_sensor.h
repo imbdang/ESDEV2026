@@ -2,44 +2,47 @@
 #ifndef __M_TCS34_H__
 #define __M_TCS34_H__
 
-#include <stdint.h>
 #include "h_i2c.h"
+#include <stdint.h>
 
 /* ============================== Device ====================================== */
-#define TCS34_ADDR      0x29U
+#define TCS34_ADDR 0x29U
 
 /* ============================== Gain options ================================ */
-typedef enum {
-    TCS34_GAIN_1X  = 0x00,
-    TCS34_GAIN_4X  = 0x01,
+typedef enum
+{
+    TCS34_GAIN_1X = 0x00,
+    TCS34_GAIN_4X = 0x01,
     TCS34_GAIN_16X = 0x02,
     TCS34_GAIN_60X = 0x03
 } TCS34_Gain;
 
 /* ============================== RGBC result ================================= */
-typedef struct {
-    uint16_t c;   /* clear  */
-    uint16_t r;   /* red    */
-    uint16_t g;   /* green  */
-    uint16_t b;   /* blue   */
+typedef struct
+{
+    uint16_t c; /* clear  */
+    uint16_t r; /* red    */
+    uint16_t g; /* green  */
+    uint16_t b; /* blue   */
 } TCS34_Data;
 
-typedef enum 
+typedef enum
 {
-    C_NONE = 0, //white maybe
+    C_NONE = 0, // white maybe
     C_RED,
     C_GREEN,
     C_BLUE,
     C_YEALLOW,
 } Color_table;
 
-typedef struct {
-    uint8_t     Tcs_ID_1;
-    TCS34_Data  Data_SS_1;
+typedef struct
+{
+    uint8_t Tcs_ID_1;
+    TCS34_Data Data_SS_1;
     Color_table Color_SS_1;
 
-    uint8_t     Tcs_ID_2;
-    TCS34_Data  Data_SS_2;
+    uint8_t Tcs_ID_2;
+    TCS34_Data Data_SS_2;
     Color_table Color_SS_2;
 } Sensor_result;
 

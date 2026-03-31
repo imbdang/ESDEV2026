@@ -7,7 +7,8 @@
 #include <stdint.h>
 
 /* ========================= I2C Register Map ================================ */
-typedef struct {
+typedef struct
+{
     volatile uint32_t CR1;
     volatile uint32_t CR2;
     volatile uint32_t OAR1;
@@ -19,39 +20,40 @@ typedef struct {
     volatile uint32_t TRISE;
 } I2C_TypeDef;
 
-#define I2C1_BASE   0x40005400UL
-#define I2C2_BASE   0x40005800UL
+#define I2C1_BASE 0x40005400UL
+#define I2C2_BASE 0x40005800UL
 
-#define I2C1  ((volatile I2C_TypeDef *) I2C1_BASE)
-#define I2C2  ((volatile I2C_TypeDef *) I2C2_BASE)
+#define I2C1 ((volatile I2C_TypeDef *)I2C1_BASE)
+#define I2C2 ((volatile I2C_TypeDef *)I2C2_BASE)
 
 /* --------------------------------- CR1 ------------------------------------ */
-#define I2C_CR1_PE          (1U << 0)
-#define I2C_CR1_START       (1U << 8)
-#define I2C_CR1_STOP        (1U << 9)
-#define I2C_CR1_ACK        (1U << 10)
-#define I2C_CR1_SWRST      (1U << 15)
+#define I2C_CR1_PE (1U << 0)
+#define I2C_CR1_START (1U << 8)
+#define I2C_CR1_STOP (1U << 9)
+#define I2C_CR1_ACK (1U << 10)
+#define I2C_CR1_SWRST (1U << 15)
 
 /* --------------------------------- SR1 ------------------------------------ */
-#define I2C_SR1_SB          (1U <<  0)
-#define I2C_SR1_ADDR        (1U <<  1)
-#define I2C_SR1_BTF         (1U <<  2)
-#define I2C_SR1_RXNE        (1U <<  6)
-#define I2C_SR1_TXE         (1U <<  7)
-#define I2C_SR1_BERR        (1U <<  8)
-#define I2C_SR1_ARLO        (1U <<  9)
-#define I2C_SR1_AF          (1U << 10)
-#define I2C_SR1_OVR         (1U << 11)
+#define I2C_SR1_SB (1U << 0)
+#define I2C_SR1_ADDR (1U << 1)
+#define I2C_SR1_BTF (1U << 2)
+#define I2C_SR1_RXNE (1U << 6)
+#define I2C_SR1_TXE (1U << 7)
+#define I2C_SR1_BERR (1U << 8)
+#define I2C_SR1_ARLO (1U << 9)
+#define I2C_SR1_AF (1U << 10)
+#define I2C_SR1_OVR (1U << 11)
 
 /* --------------------------------- SR2 ------------------------------------ */
-#define I2C_SR2_BUSY        (1U <<  1)
+#define I2C_SR2_BUSY (1U << 1)
 
 /* --------------------------------- CCR ------------------------------------ */
-#define I2C_CCR_FS          (1U << 15)
+#define I2C_CCR_FS (1U << 15)
 
 /* ========================= Return Codes =================================== */
-typedef enum {
-    I2C_OK          = 0,
+typedef enum
+{
+    I2C_OK = 0,
     I2C_ERR_TIMEOUT,
     I2C_ERR_NACK,
     I2C_ERR_BUS

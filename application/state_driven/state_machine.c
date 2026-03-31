@@ -1,6 +1,6 @@
-#include "config.h"
 #include "state_machine.h"
 #include "app.h"
+#include "config.h"
 #include "systick.h"
 
 Color_table target_colors[STATE_MACHINE_MAX_TARGETS];
@@ -21,7 +21,8 @@ static uint32_t checkpoint_cooldown_until_ms;
 
 static void state_machine_advance_checkpoint(void)
 {
-    if (current_checkpoint < CHECK_POINT_4) {
+    if (current_checkpoint < CHECK_POINT_4)
+    {
         current_checkpoint = (Checkpoint)(current_checkpoint + 1U);
     }
 }
@@ -31,18 +32,21 @@ static void state_machine_log_entry_sensor_snapshot(void)
     checkpoint_log.entries[checkpoint_log.next_index] = sensor_result;
 
     checkpoint_log.next_index++;
-    if (checkpoint_log.next_index >= STATE_MACHINE_ENTRY_LOG_SIZE) {
+    if (checkpoint_log.next_index >= STATE_MACHINE_ENTRY_LOG_SIZE)
+    {
         checkpoint_log.next_index = 0U;
     }
 
-    if (checkpoint_log.count < STATE_MACHINE_ENTRY_LOG_SIZE) {
+    if (checkpoint_log.count < STATE_MACHINE_ENTRY_LOG_SIZE)
+    {
         checkpoint_log.count++;
     }
 }
 
 static void state_machine_apply_checkpoint_entry_action(void)
 {
-    switch (current_checkpoint) {
+    switch (current_checkpoint)
+    {
     case CHECK_POINT_1:
         Motor_Forward(-400);
         delay_ms(350);
@@ -73,7 +77,9 @@ static void state_machine_apply_checkpoint_entry_action(void)
 
     case CHECK_POINT_5:
         Motor_Stop();
-        while (1) {}
+        while (1)
+        {
+        }
         break;
 
     default:
@@ -83,7 +89,8 @@ static void state_machine_apply_checkpoint_entry_action(void)
 
 static void state_machine_refresh_targets(void)
 {
-    if ((target_color_count == 0U) || (target_color_index >= target_color_count)) {
+    if ((target_color_count == 0U) || (target_color_index >= target_color_count))
+    {
         current_target = C_NONE;
         target_color = C_NONE;
         return;
@@ -91,9 +98,12 @@ static void state_machine_refresh_targets(void)
 
     current_target = target_colors[target_color_index];
 
-    if (target_color_index + 1U < target_color_count) {
+    if (target_color_index + 1U < target_color_count)
+    {
         target_color = target_colors[target_color_index + 1U];
-    } else {
+    }
+    else
+    {
         target_color = C_NONE;
     }
 }
@@ -107,42 +117,58 @@ static State_car state_machine_decide(Color_table left, Color_table right)
                            (current_checkpoint != NONE_CHECK) &&
                            (checkpoint_entry_armed != 0U) &&
                            (cooldown_active == 0U) &&
-                           (entry_turn_used_for_next_target == 0U)) ? 1U : 0U;
+                           (entry_turn_used_for_next_target == 0U))
+                              ? 1U
+                              : 0U;
 
-    if ((entry_ready != 0U) && (sees_target != 0U)) {
-        if (checkpoint_entry_target_streak < CFG_SM_ENTRY_DETECT_STREAK) {
+    if ((entry_ready != 0U) && (sees_target != 0U))
+    {
+        if (checkpoint_entry_target_streak < CFG_SM_ENTRY_DETECT_STREAK)
+        {
             checkpoint_entry_target_streak++;
         }
-    } else {
+    }
+    else
+    {
         checkpoint_entry_target_streak = 0U;
     }
 
     if ((entry_ready != 0U) &&
-        (checkpoint_entry_target_streak >= CFG_SM_ENTRY_DETECT_STREAK)) {
+        (checkpoint_entry_target_streak >= CFG_SM_ENTRY_DETECT_STREAK))
+    {
         checkpoint_entry_target_streak = 0U;
         entry_turn_used_for_next_target = 1U;
         return STATE_ENTRY_CHECKPOINT;
     }
 
-    if ((left == current_target) && (right == current_target)) {
-        if (checkpoint_entry_arm_frames < CFG_SM_MIN_ARM_FRAMES) {
+    if ((left == current_target) && (right == current_target))
+    {
+        if (checkpoint_entry_arm_frames < CFG_SM_MIN_ARM_FRAMES)
+        {
             checkpoint_entry_arm_frames++;
-        } else {
+        }
+        else
+        {
             checkpoint_entry_armed = 1U;
         }
         return STATE_FORWARD;
-    } else {
+    }
+    else
+    {
         checkpoint_entry_arm_frames = 0U;
     }
-    if ((left == current_target) && (right != current_target)) return STATE_TURN_LEFT;
-    if ((right == current_target) && (left != current_target)) return STATE_TURN_RIGHT;
+    if ((left == current_target) && (right != current_target))
+        return STATE_TURN_LEFT;
+    if ((right == current_target) && (left != current_target))
+        return STATE_TURN_RIGHT;
 
     return STATE_LOST;
 }
 
 static void state_machine_apply(State_car state)
 {
-    switch (state) {
+    switch (state)
+    {
     case STATE_FORWARD:
         Motor_Forward(CFG_SM_FORWARD_SPEED);
         break;
@@ -188,26 +214,30 @@ Color_table StateMachine_GetNextTarget(void)
 
 void StateMachine_SetTargetIndex(uint8_t index)
 {
-    if (index < target_color_count) {
+    if (index < target_color_count)
+    {
         target_color_index = index;
         entry_turn_used_for_next_target = 0U;
         checkpoint_entry_armed = 0U;
         checkpoint_entry_arm_frames = 0U;
         checkpoint_entry_target_streak = 0U;
         checkpoint_cooldown_until_ms = 0U;
-        if (index < (uint8_t)CHECK_POINT_4) {
+        if (index < (uint8_t)CHECK_POINT_4)
+        {
             current_checkpoint = (Checkpoint)(index + 1U);
-        } else {
+        }
+        else
+        {
             current_checkpoint = CHECK_POINT_4;
         }
         state_machine_refresh_targets();
     }
 }
 
-
 void StateMachine_AdvanceTarget(void)
 {
-    if ((target_color_count == 0U) || (target_color_index + 1U >= target_color_count)) {
+    if ((target_color_count == 0U) || (target_color_index + 1U >= target_color_count))
+    {
         return;
     }
 
@@ -225,8 +255,7 @@ void StateMachine_Init(const Color_table *targets, uint8_t count)
     uint8_t i;
     Sensor_result empty_result = {0};
 
-    target_color_count = (uint8_t)((count > STATE_MACHINE_MAX_TARGETS) ?
-                                   STATE_MACHINE_MAX_TARGETS : count);
+    target_color_count = (uint8_t)((count > STATE_MACHINE_MAX_TARGETS) ? STATE_MACHINE_MAX_TARGETS : count);
     target_color_index = 0U;
     current_checkpoint = CHECK_POINT_1;
     checkpoint_log.next_index = 0U;
@@ -237,15 +266,18 @@ void StateMachine_Init(const Color_table *targets, uint8_t count)
     checkpoint_entry_target_streak = 0U;
     checkpoint_cooldown_until_ms = 0U;
 
-    for (i = 0U; i < STATE_MACHINE_ENTRY_LOG_SIZE; i++) {
+    for (i = 0U; i < STATE_MACHINE_ENTRY_LOG_SIZE; i++)
+    {
         checkpoint_log.entries[i] = empty_result;
     }
 
-    for (i = 0U; i < target_color_count; i++) {
+    for (i = 0U; i < target_color_count; i++)
+    {
         target_colors[i] = targets[i];
     }
 
-    for (; i < STATE_MACHINE_MAX_TARGETS; i++) {
+    for (; i < STATE_MACHINE_MAX_TARGETS; i++)
+    {
         target_colors[i] = C_NONE;
     }
 

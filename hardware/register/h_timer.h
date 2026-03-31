@@ -5,7 +5,8 @@
 #include <stdint.h>
 
 /* ====================================== TIMER1 REGISTER ======================================= */
-typedef struct {
+typedef struct
+{
     volatile uint32_t CR1;
     volatile uint32_t CR2;
     volatile uint32_t SMCR;
@@ -28,8 +29,7 @@ typedef struct {
     volatile uint32_t DMAR;
 } TIM_TypeDef;
 
-#define TIM1 ((volatile TIM_TypeDef*)0x40012C00)
-
+#define TIM1 ((volatile TIM_TypeDef *)0x40012C00)
 
 void TIM1_Start(void);
 void TIM1_Stop(void);

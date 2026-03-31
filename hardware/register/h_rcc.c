@@ -129,4 +129,3 @@ void RCC_APB2_Reset(uint32_t mask)
     RCC->APB2RSTR |= mask;
     RCC->APB2RSTR &= ~mask;
 }
-

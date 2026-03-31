@@ -1,8 +1,0 @@
-green   $1 = {c = 167, r = 47, g = 78, b = 43}      //green (tcs1)
-red     $2 = {c = 357, r = 291, g = 43, b = 48}     //red (tcs2)
-blue    $1 = {c = 305, r = 66, g = 94, b = 146}     //blue (tcs1)
-white   $2 = {c = 836, r = 393, g = 242, b = 176}   //white (tcs2)
-yeallow     
-$1 = {c = 1186, r = 503, g = 475, b = 174}          //yeallow (tcs1)
-$2 = {c = 579, r = 301, g = 180, b = 84}            //yeallow (tcs2)
-
