@@ -4,8 +4,8 @@
 #include "m_sensor.h"
 
 /* ============================== TCS34 ====================================== */
-#define CFG_TCS34_ATIME 0xEB
-// #define CFG_TCS34_ATIME              0xD5U
+#define CFG_TCS34_ATIME 0xF4
+
 #define CFG_TCS34_GAIN TCS34_GAIN_1X
 
 // ATIME   Thoi gian tich phan
@@ -32,16 +32,23 @@
 // 0x00    614.4 ms
 
 /* ============================== Motor speed ================================ */
-#define CFG_SM_FORWARD_SPEED (-480)
+#define MAIN_SPEED (420)
+
+#define CFG_SM_FORWARD_SPEED (-MAIN_SPEED)
 #define CFG_SM_TURN_INNER_SPEED (-220)
-#define CFG_SM_TURN_OUTER_SPEED (-320)
-#define CFG_SM_LOST_LEFT_SPEED (220)
-#define CFG_SM_LOST_RIGHT_SPEED (-220)
+#define CFG_SM_TURN_OUTER_SPEED (-MAIN_SPEED)
+#define CFG_SM_LOST_LEFT_SPEED (-220)
+#define CFG_SM_LOST_RIGHT_SPEED (220)
 #define CFG_SM_CHECKPOINT_COOLDOWN_MS (3000U)
-#define CFG_SM_ENTRY_DETECT_STREAK (5U)
+#define CFG_SM_ENTRY_DETECT_STREAK (3U)
 #define CFG_SM_MIN_ARM_FRAMES (3U)
 
 #define CFG_TIME_TURN (390)
-#define CFG_TIME_TURN45 (30)
+#define CFG_TIME_TURN45 (25)
+
+#define CFG_CHECKPOINT1_TURN (390)
+#define CFG_CHECKPOINT2_TURN (34)
+#define CFG_CHECKPOINT3_TURN (300)
+#define CFG_CHECKPOINT4_TURN (300)
 
 #endif /* __CONFIG_H__ */

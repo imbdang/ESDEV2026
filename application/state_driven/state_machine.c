@@ -18,6 +18,7 @@ static uint8_t checkpoint_entry_armed;
 static uint8_t checkpoint_entry_arm_frames;
 static uint8_t checkpoint_entry_target_streak;
 static uint32_t checkpoint_cooldown_until_ms;
+static uint8_t lost_backed_up;
 
 static void state_machine_advance_checkpoint(void)
 {
@@ -52,31 +53,42 @@ static void state_machine_apply_checkpoint_entry_action(void)
         delay_ms(350);
         Motor_Stop();
         delay_ms(100);
-        Motor_Right90();
+        MotorB_Set(400);
+        MotorA_Set(-400);
+        delay_ms(CFG_CHECKPOINT1_TURN);
         break;
 
     case CHECK_POINT_2:
         Motor_Stop();
         delay_ms(100);
-        Motor_Right45();
+        MotorB_Set(400);
+        MotorA_Set(-400);
+        delay_ms(CFG_CHECKPOINT2_TURN);
         break;
 
     case CHECK_POINT_3:
         Motor_Stop();
         delay_ms(100);
-        Motor_Right90();
+        MotorB_Set(400);
+        MotorA_Set(-400);
+        delay_ms(CFG_CHECKPOINT3_TURN);
         break;
 
     case CHECK_POINT_4:
         Motor_Stop();
         delay_ms(100);
-        Motor_Right90();
+        MotorB_Set(400);
+        MotorA_Set(-400);
+        delay_ms(CFG_CHECKPOINT4_TURN);
         current_checkpoint = CHECK_POINT_5;
         StateMachine_AdvanceTarget();
         break;
 
     case CHECK_POINT_5:
         Motor_Stop();
+        delay_ms(500);
+        MotorB_Set(300);
+        MotorA_Set(-300);
         while (1)
         {
         }
@@ -170,14 +182,17 @@ static void state_machine_apply(State_car state)
     switch (state)
     {
     case STATE_FORWARD:
+        lost_backed_up = 0U;
         Motor_Forward(CFG_SM_FORWARD_SPEED);
         break;
 
     case STATE_TURN_LEFT:
+        lost_backed_up = 0U;
         Motor_TurnLeft(CFG_SM_TURN_INNER_SPEED, CFG_SM_TURN_OUTER_SPEED);
         break;
 
     case STATE_TURN_RIGHT:
+        lost_backed_up = 0U;
         Motor_TurnRight(CFG_SM_TURN_OUTER_SPEED, CFG_SM_TURN_INNER_SPEED);
         break;
 
@@ -192,7 +207,16 @@ static void state_machine_apply(State_car state)
         break;
 
     case STATE_LOST:
-        Motor_TurnLeft(CFG_SM_LOST_LEFT_SPEED, CFG_SM_LOST_RIGHT_SPEED);
+        // if (lost_backed_up == 0U)
+        // {
+        //     Motor_Stop();
+        //     delay_ms(10);
+        //     Motor_Forward(220);
+        //     delay_ms(250);
+        //     Motor_Stop();
+        //     lost_backed_up = 1U;
+        // }
+        Motor_TurnRight(CFG_SM_LOST_LEFT_SPEED, CFG_SM_LOST_RIGHT_SPEED);
         break;
 
     case STATE_IDLE:
