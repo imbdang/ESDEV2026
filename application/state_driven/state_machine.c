@@ -49,36 +49,36 @@ static void state_machine_apply_checkpoint_entry_action(void)
     switch (current_checkpoint)
     {
     case CHECK_POINT_1:
-        Motor_Forward(-400);
+        Motor_Forward(1000);
         delay_ms(350);
         Motor_Stop();
         delay_ms(100);
-        MotorB_Set(400);
-        MotorA_Set(-400);
+        MotorB_Set(-1000);
+        MotorA_Set(1000);
         delay_ms(CFG_CHECKPOINT1_TURN);
         break;
 
     case CHECK_POINT_2:
         Motor_Stop();
         delay_ms(100);
-        MotorB_Set(400);
-        MotorA_Set(-400);
+        MotorB_Set(-1000);
+        MotorA_Set(1000);
         delay_ms(CFG_CHECKPOINT2_TURN);
         break;
 
     case CHECK_POINT_3:
         Motor_Stop();
         delay_ms(100);
-        MotorB_Set(400);
-        MotorA_Set(-400);
+        MotorB_Set(-1000);
+        MotorA_Set(1000);
         delay_ms(CFG_CHECKPOINT3_TURN);
         break;
 
     case CHECK_POINT_4:
         Motor_Stop();
         delay_ms(100);
-        MotorB_Set(400);
-        MotorA_Set(-400);
+        MotorB_Set(-1000);
+        MotorA_Set(1000);
         delay_ms(CFG_CHECKPOINT4_TURN);
         current_checkpoint = CHECK_POINT_5;
         StateMachine_AdvanceTarget();
@@ -87,8 +87,8 @@ static void state_machine_apply_checkpoint_entry_action(void)
     case CHECK_POINT_5:
         Motor_Stop();
         delay_ms(500);
-        MotorB_Set(300);
-        MotorA_Set(-300);
+        MotorB_Set(-1000);
+        MotorA_Set(1000);
         while (1)
         {
         }

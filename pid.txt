@@ -1,0 +1,52 @@
+● Cuối cùng, init các variable mới trong StateMachine_Init:
+                                                                                          
+● Update(application/state_driven/state_machine.c)
+  ⎿  Added 3 lines                                                                                                                                                                                                
+      295      checkpoint_entry_arm_frames = 0U;
+      296      checkpoint_entry_target_streak = 0U;                                                                                                                                                               
+      297      checkpoint_cooldown_until_ms = 0U;           
+      298 +    pd_error = 0;                                                                                                                                                                                      
+      299 +    pd_prev_error = 0;                                                                                                                                                                          
+      300 +    last_seen_side = 1;                                                                                                                                                                                
+      301                                                   
+      302      for (i = 0U; i < STATE_MACHINE_ENTRY_LOG_SIZE; i++)
+      303      {
+
+● Verify kết quả:                     
+                                                                                          
+  Read 1 file (ctrl+o to expand)    
+                                                                                                                                                                                                                  
+● Tốt. Tóm lại những gì đã thay đổi:  
+                                                                                                                                                                                                                  
+  ---                                                                                                                                                                                                             
+  Tóm tắt thay đổi                                                                                                                                                                                                
+                                                                                                                                                                                                                  
+  config.h – thêm 2 hằng số tune được:                                                                                                                                                                            
+  #define CFG_PD_KP (150)   // proportional                                                                                                                                                                       
+  #define CFG_PD_KD (80)    // derivative                                                                                                                                                                         
+                                                                                                                                                                                                                  
+  state_machine.c:                                                                                                                                                                                                
+                                                                                                                                                                                                                  
+  ┌──────────────────────────┬─────────────────────────────────────────────────────────────────────────────────┐                                                                                                  
+  │           Chỗ            │                                    Thay đổi                                     │                                                                                                  
+  ├──────────────────────────┼─────────────────────────────────────────────────────────────────────────────────┤                                                                                                  
+  │ decide()                 │ TURN_LEFT/RIGHT → đều trả về STATE_FORWARD, set pd_error = ±1 và last_seen_side │
+  ├──────────────────────────┼─────────────────────────────────────────────────────────────────────────────────┤                                                                                                  
+  │ apply() FORWARD          │ Thay Motor_Forward() bằng PD: MotorA = BASE - corr, MotorB = BASE + corr        │                                                                                                  
+  ├──────────────────────────┼─────────────────────────────────────────────────────────────────────────────────┤                                                                                                  
+  │ apply() LOST             │ Thay "luôn quay phải" bằng "quay theo last_seen_side"                           │                                                                                                  
+  ├──────────────────────────┼─────────────────────────────────────────────────────────────────────────────────┤                                                                                                  
+  │ apply() ENTRY_CHECKPOINT │ Reset pd_prev_error sau khi xử lý checkpoint                                    │
+  └──────────────────────────┴─────────────────────────────────────────────────────────────────────────────────┘                                                                                                  
+                                                            
+  ---                                                                                                                                                                                                             
+  Cách tune Kp và Kd                                        
+                                                                                                                                                                                                                  
+  1. Kd=0, Kp=100 → chạy thử, xe dao động zigzag            
+  2. Tăng Kp lên 150, 200 đến khi vừa bám được                                                                                                                                                                    
+  3. Tăng Kd từ 50 lên để giảm dao động                                                                                                                                                                           
+  4. Nếu xe jitter (rung nhẹ) khi thẳng → giảm Kd                                                                                                                                                                 
+                                                                                                                                                                                                                  
+  Với tốc độ 420, vùng khởi đầu hợp lý là Kp=150, Kd=80. Sau khi test bạn có thể chỉnh thêm.                                                                                                                      
+                                                                                                                                                                                                                  
+✻ Worked for 2m 50s                                           

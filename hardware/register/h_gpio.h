@@ -58,4 +58,22 @@ void GPIO_TogglePin(volatile GPIO_TypeDef *gpio, uint8_t pin);
 void GPIO_SetMask(volatile GPIO_TypeDef *gpio, uint16_t mask);
 void GPIO_ClearMask(volatile GPIO_TypeDef *gpio, uint16_t mask);
 
+/* ====================================== GPIO PIN NUMBER ======================================= */
+#define GPIO_PIN_0   0U
+#define GPIO_PIN_1   1U
+#define GPIO_PIN_2   2U
+#define GPIO_PIN_3   3U
+#define GPIO_PIN_4   4U
+#define GPIO_PIN_5   5U
+#define GPIO_PIN_6   6U
+#define GPIO_PIN_7   7U
+#define GPIO_PIN_8   8U
+#define GPIO_PIN_9   9U
+#define GPIO_PIN_10  10U
+#define GPIO_PIN_11  11U
+#define GPIO_PIN_12  12U
+#define GPIO_PIN_13  13U
+#define GPIO_PIN_14  14U
+#define GPIO_PIN_15  15U
+
 #endif /*<! __GPIO_H__ */

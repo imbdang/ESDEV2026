@@ -32,13 +32,13 @@
 // 0x00    614.4 ms
 
 /* ============================== Motor speed ================================ */
-#define MAIN_SPEED (420)
+#define MAIN_SPEED (1000)
 
-#define CFG_SM_FORWARD_SPEED (-MAIN_SPEED)
-#define CFG_SM_TURN_INNER_SPEED (-220)
-#define CFG_SM_TURN_OUTER_SPEED (-MAIN_SPEED)
-#define CFG_SM_LOST_LEFT_SPEED (-220)
-#define CFG_SM_LOST_RIGHT_SPEED (220)
+#define CFG_SM_FORWARD_SPEED (MAIN_SPEED)
+#define CFG_SM_TURN_INNER_SPEED (820)
+#define CFG_SM_TURN_OUTER_SPEED (MAIN_SPEED)
+#define CFG_SM_LOST_LEFT_SPEED (1000)
+#define CFG_SM_LOST_RIGHT_SPEED (-1000)
 #define CFG_SM_CHECKPOINT_COOLDOWN_MS (3000U)
 #define CFG_SM_ENTRY_DETECT_STREAK (3U)
 #define CFG_SM_MIN_ARM_FRAMES (3U)

@@ -42,9 +42,14 @@ static void app_init(void)
 void app_run(void)
 {
     app_init();
-    delay_ms(500);
+    delay_ms(1000);
+    // MotorA_Set(1000);
+    // MotorB_Set(400);
+    // delay_ms(4500);
     while (1)
     {
+        // Motor_Stop();
+        // Motor_Forward(1000);
         a_read_sensor();
         StateMachine_Update();
     }
