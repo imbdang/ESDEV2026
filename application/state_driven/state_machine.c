@@ -19,6 +19,31 @@ static uint8_t checkpoint_entry_arm_frames;
 static uint8_t checkpoint_entry_target_streak;
 static uint32_t checkpoint_cooldown_until_ms;
 static uint8_t lost_backed_up;
+static uint8_t center_confirm_count;
+static State_car last_turn_state;
+static uint8_t lost_debounce_count;
+
+#ifdef SM_LOG_ENABLE
+SM_Log sm_log;
+
+static void sm_log_record(State_car state, const Sensor_result *s)
+{
+    SM_LogEntry *e = &sm_log.entries[sm_log.next];
+
+    e->timestamp_ms = sys_get_tick();
+    e->state        = state;
+    e->c1 = s->Data_SS_1.c;  e->r1 = s->Data_SS_1.r;
+    e->g1 = s->Data_SS_1.g;  e->b1 = s->Data_SS_1.b;
+    e->c2 = s->Data_SS_2.c;  e->r2 = s->Data_SS_2.r;
+    e->g2 = s->Data_SS_2.g;  e->b2 = s->Data_SS_2.b;
+    e->color1 = s->Color_SS_1;
+    e->color2 = s->Color_SS_2;
+
+    sm_log.next = (uint16_t)((sm_log.next + 1U) % SM_LOG_SIZE);
+    if (sm_log.count < SM_LOG_SIZE)
+        sm_log.count++;
+}
+#endif
 
 static void state_machine_advance_checkpoint(void)
 {
@@ -50,9 +75,9 @@ static void state_machine_apply_checkpoint_entry_action(void)
     {
     case CHECK_POINT_1:
         Motor_Forward(1000);
-        delay_ms(350);
+        delay_ms(500);
         Motor_Stop();
-        delay_ms(100);
+        delay_ms(50);
         MotorB_Set(-1000);
         MotorA_Set(1000);
         delay_ms(CFG_CHECKPOINT1_TURN);
@@ -60,7 +85,7 @@ static void state_machine_apply_checkpoint_entry_action(void)
 
     case CHECK_POINT_2:
         Motor_Stop();
-        delay_ms(100);
+        delay_ms(50);
         MotorB_Set(-1000);
         MotorA_Set(1000);
         delay_ms(CFG_CHECKPOINT2_TURN);
@@ -68,7 +93,7 @@ static void state_machine_apply_checkpoint_entry_action(void)
 
     case CHECK_POINT_3:
         Motor_Stop();
-        delay_ms(100);
+        delay_ms(50);
         MotorB_Set(-1000);
         MotorA_Set(1000);
         delay_ms(CFG_CHECKPOINT3_TURN);
@@ -76,7 +101,7 @@ static void state_machine_apply_checkpoint_entry_action(void)
 
     case CHECK_POINT_4:
         Motor_Stop();
-        delay_ms(100);
+        delay_ms(50);
         MotorB_Set(-1000);
         MotorA_Set(1000);
         delay_ms(CFG_CHECKPOINT4_TURN);
@@ -86,7 +111,10 @@ static void state_machine_apply_checkpoint_entry_action(void)
 
     case CHECK_POINT_5:
         Motor_Stop();
-        delay_ms(500);
+        delay_ms(50);
+        Motor_Forward(1000);
+        delay_ms(1000);
+        Motor_Stop();
         MotorB_Set(-1000);
         MotorA_Set(1000);
         while (1)
@@ -163,16 +191,39 @@ static State_car state_machine_decide(Color_table left, Color_table right)
         {
             checkpoint_entry_armed = 1U;
         }
+
+        center_confirm_count++;
+        if (center_confirm_count < CFG_SM_CENTER_CONFIRM)
+        {
+            /* Ca 2 sensor thay line nhung chua du frame - giu nguyen correction
+             * truoc do, khong nhat vot len 1000/1000 ngay, tranh xe vot qua giua */
+            return last_turn_state;
+        }
         return STATE_FORWARD;
     }
     else
     {
+        center_confirm_count = 0U;
         checkpoint_entry_arm_frames = 0U;
     }
     if ((left == current_target) && (right != current_target))
+    {
+        lost_debounce_count = 0U;
+        last_turn_state = STATE_TURN_LEFT;
         return STATE_TURN_LEFT;
+    }
     if ((right == current_target) && (left != current_target))
+    {
+        lost_debounce_count = 0U;
+        last_turn_state = STATE_TURN_RIGHT;
         return STATE_TURN_RIGHT;
+    }
+
+    /* Ca 2 sensor NONE: tiep tuc turn cu them vai frame truoc khi spin LOST
+     * tranh sensor mep chap chorn 1 frame lam xe spin ngay lap tuc */
+    lost_debounce_count++;
+    if (lost_debounce_count <= CFG_SM_LOST_DEBOUNCE)
+        return last_turn_state;
 
     return STATE_LOST;
 }
@@ -199,7 +250,7 @@ static void state_machine_apply(State_car state)
     case STATE_ENTRY_CHECKPOINT:
         state_machine_log_entry_sensor_snapshot();
         Motor_Stop();
-        delay_ms(100);
+        delay_ms(50);
         state_machine_apply_checkpoint_entry_action();
         state_machine_advance_checkpoint();
         StateMachine_AdvanceTarget();
@@ -289,6 +340,13 @@ void StateMachine_Init(const Color_table *targets, uint8_t count)
     checkpoint_entry_arm_frames = 0U;
     checkpoint_entry_target_streak = 0U;
     checkpoint_cooldown_until_ms = 0U;
+    center_confirm_count = 0U;
+    last_turn_state = STATE_FORWARD;
+    lost_debounce_count = 0U;
+#ifdef SM_LOG_ENABLE
+    sm_log.next  = 0U;
+    sm_log.count = 0U;
+#endif
 
     for (i = 0U; i < STATE_MACHINE_ENTRY_LOG_SIZE; i++)
     {
@@ -313,9 +371,17 @@ void StateMachine_Init(const Color_table *targets, uint8_t count)
 
 void StateMachine_Update(void)
 {
-    Color_table left = sensor_result.Color_SS_1;
+    State_car prev_state;
+    Color_table left  = sensor_result.Color_SS_1;
     Color_table right = sensor_result.Color_SS_2;
 
+    prev_state    = current_state;
     current_state = state_machine_decide(left, right);
+
+#ifdef SM_LOG_ENABLE
+    if (current_state != prev_state)
+        sm_log_record(current_state, &sensor_result);
+#endif
+
     state_machine_apply(current_state);
 }

@@ -1,52 +1,104 @@
-● Cuối cùng, init các variable mới trong StateMachine_Init:
-                                                                                          
-● Update(application/state_driven/state_machine.c)
-  ⎿  Added 3 lines                                                                                                                                                                                                
-      295      checkpoint_entry_arm_frames = 0U;
-      296      checkpoint_entry_target_streak = 0U;                                                                                                                                                               
-      297      checkpoint_cooldown_until_ms = 0U;           
-      298 +    pd_error = 0;                                                                                                                                                                                      
-      299 +    pd_prev_error = 0;                                                                                                                                                                          
-      300 +    last_seen_side = 1;                                                                                                                                                                                
-      301                                                   
-      302      for (i = 0U; i < STATE_MACHINE_ENTRY_LOG_SIZE; i++)
-      303      {
+====================================================================
+  HUONG DAN CHINH THONG SO PID + HYSTERESIS THEO LINE
+====================================================================
 
-● Verify kết quả:                     
-                                                                                          
-  Read 1 file (ctrl+o to expand)    
-                                                                                                                                                                                                                  
-● Tốt. Tóm lại những gì đã thay đổi:  
-                                                                                                                                                                                                                  
-  ---                                                                                                                                                                                                             
-  Tóm tắt thay đổi                                                                                                                                                                                                
-                                                                                                                                                                                                                  
-  config.h – thêm 2 hằng số tune được:                                                                                                                                                                            
-  #define CFG_PD_KP (150)   // proportional                                                                                                                                                                       
-  #define CFG_PD_KD (80)    // derivative                                                                                                                                                                         
-                                                                                                                                                                                                                  
-  state_machine.c:                                                                                                                                                                                                
-                                                                                                                                                                                                                  
-  ┌──────────────────────────┬─────────────────────────────────────────────────────────────────────────────────┐                                                                                                  
-  │           Chỗ            │                                    Thay đổi                                     │                                                                                                  
-  ├──────────────────────────┼─────────────────────────────────────────────────────────────────────────────────┤                                                                                                  
-  │ decide()                 │ TURN_LEFT/RIGHT → đều trả về STATE_FORWARD, set pd_error = ±1 và last_seen_side │
-  ├──────────────────────────┼─────────────────────────────────────────────────────────────────────────────────┤                                                                                                  
-  │ apply() FORWARD          │ Thay Motor_Forward() bằng PD: MotorA = BASE - corr, MotorB = BASE + corr        │                                                                                                  
-  ├──────────────────────────┼─────────────────────────────────────────────────────────────────────────────────┤                                                                                                  
-  │ apply() LOST             │ Thay "luôn quay phải" bằng "quay theo last_seen_side"                           │                                                                                                  
-  ├──────────────────────────┼─────────────────────────────────────────────────────────────────────────────────┤                                                                                                  
-  │ apply() ENTRY_CHECKPOINT │ Reset pd_prev_error sau khi xử lý checkpoint                                    │
-  └──────────────────────────┴─────────────────────────────────────────────────────────────────────────────────┘                                                                                                  
-                                                            
-  ---                                                                                                                                                                                                             
-  Cách tune Kp và Kd                                        
-                                                                                                                                                                                                                  
-  1. Kd=0, Kp=100 → chạy thử, xe dao động zigzag            
-  2. Tăng Kp lên 150, 200 đến khi vừa bám được                                                                                                                                                                    
-  3. Tăng Kd từ 50 lên để giảm dao động                                                                                                                                                                           
-  4. Nếu xe jitter (rung nhẹ) khi thẳng → giảm Kd                                                                                                                                                                 
-                                                                                                                                                                                                                  
-  Với tốc độ 420, vùng khởi đầu hợp lý là Kp=150, Kd=80. Sau khi test bạn có thể chỉnh thêm.                                                                                                                      
-                                                                                                                                                                                                                  
-✻ Worked for 2m 50s                                           
+CAC THONG SO CHINH (trong config.h)
+--------------------------------------------------------------------
+CFG_PID_BASE_SPEED     = 700   Toc do co so khi di thang
+CFG_PID_KP             = 300   He so Proportional
+CFG_PID_KI             = 0     He so Integral (tat theo mac dinh)
+CFG_PID_KD             = 0     He so Derivative (de 0 - xem giai thich)
+CFG_PID_INTEGRAL_MAX   = 5     Gioi han tich luy I (anti-windup)
+CFG_SM_CENTER_CONFIRM  = 3     So frame ca 2 sensor phai cung thay line
+                                truoc khi chuyen FORWARD
+
+
+CAC THONG SO HUONG DAN NHANH
+--------------------------------------------------------------------
+CHINH TRUOC TIEN:
+  CFG_SM_CENTER_CONFIRM  (diet giat o mep line)
+  CFG_PID_BASE_SPEED     (toc do thang)
+  CFG_PID_KP             (manh yeu khi cua)
+
+CACH TINH TOAN (PID)
+--------------------------------------------------------------------
+Sai so (error):
+  error = -1   chi sensor TRAI thay mau (lech trai)
+  error =  0   ca 2 sensor thay mau (di thang)
+  error = +1   chi sensor PHAI thay mau (lech phai)
+
+correction = KP * error
+
+left_speed  = BASE + correction  (clamp [-1000, 1000])
+right_speed = BASE - correction  (clamp [-1000, 1000])
+
+Vi du (BASE=700, KP=300):
+  error=0:  left=700,  right=700   (di thang)
+  error=+1: left=1000, right=400   (queo phai)
+  error=-1: left=400,  right=1000  (queo trai)
+
+
+HYSTERESIS - GIAM GIAT O MEP LINE
+--------------------------------------------------------------------
+Van de: xe chua kip vao giua da nhan FORWARD -> giat lien tuc.
+
+Giai phap: khi ca 2 sensor thay line, tiep tuc giu correction
+cua chu ky truoc them (CENTER_CONFIRM - 1) frame nua truoc khi
+thả FORWARD.
+
+  CENTER_CONFIRM = 1   -> chuyen FORWARD ngay lap tuc (no hysteresis)
+  CENTER_CONFIRM = 3   -> giu correction them 2 frame sau khi thay line
+  CENTER_CONFIRM = 5   -> giu correction them 4 frame (cho duong khuc)
+
+Tang CENTER_CONFIRM neu van con giat.
+Giam CENTER_CONFIRM neu xe cua qua xa roi moi thang.
+
+
+TAI SAO KD = 0
+--------------------------------------------------------------------
+Voi 2 sensor nhi phan (chi co -1, 0, +1):
+  error nhay tu +1 -> 0: D = KD*(0-1) = -KD (am)
+  -> xe queo NGUOC CHIEU ngay khi ve line -> gay ping-pong
+
+KD chi co tac dung voi sensor lien tuc (goc quay, encoder).
+De KD = 0 voi 2 sensor mau.
+
+
+HUONG DAN CHINH TUNG TRUONG HOP
+--------------------------------------------------------------------
+Van de: van giat o mep line
+  -> Tang CFG_SM_CENTER_CONFIRM (3 -> 4 -> 5)
+
+Van de: xe cua qua nhieu roi moi thang
+  -> Giam CFG_SM_CENTER_CONFIRM (3 -> 2)
+
+Van de: correction qua yeu, khong keo xe vao duoc
+  -> Tang CFG_PID_KP (300 -> 400 -> 500)
+     KP=500: inner=200 khi cua, manh hon
+     KP=700: inner=0, dung han banh trong khi cua
+
+Van de: xe di thang nhung lech dan sang 1 ben
+  -> Bat CFG_PID_KI (vi du 10-30)
+  -> Giu CFG_PID_INTEGRAL_MAX = 5
+
+Van de: toc do thang qua cham
+  -> Tang CFG_PID_BASE_SPEED (700 -> 800)
+  -> Tang KP tuong ung (300 -> 200 de inner khong am)
+
+
+BANG THAM KHAO NHANH
+--------------------------------------------------------------------
+  On dinh, khoi dau tot:  BASE=700, KP=300, CENTER_CONFIRM=3
+  Nhanh hon:              BASE=800, KP=200, CENTER_CONFIRM=3
+  Duong nhieu goc:        BASE=600, KP=400, CENTER_CONFIRM=4
+  Cua sac (duong hep):    BASE=700, KP=700, CENTER_CONFIRM=3
+
+
+GHI CHU
+--------------------------------------------------------------------
+- KD = 0 la BAT BUOC voi 2 sensor roi rac
+- CENTER_CONFIRM la thong so quan trong nhat de diet giat o mep
+- MotorA = banh TRAI, MotorB = banh PHAI
+- Max PWM = 1000, BASE < 1000 la chinh xac
+
+====================================================================

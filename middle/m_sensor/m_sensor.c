@@ -118,11 +118,12 @@ static Color_table TCS34_DetectColorSingle(const TCS34_Data *d)
     g = (uint16_t)(((uint32_t)d->g * 100U) / d->c);
     b = (uint16_t)(((uint32_t)d->b * 100U) / d->c);
 
-    if (r > g && r > b && r > 40U)
+    /* +2 margin: tranh flip khi 2 kenh bang nhau hoac lech 1 count */
+    if (r > g + 2U && r > b + 2U && r > 40U)
         return C_RED;
-    if (g > r && g > b && g > 40U)
+    if (g > r + 2U && g > b + 2U && g > 40U)
         return C_GREEN;
-    if (b > r && b > g && b > 25U)
+    if (b > r + 2U && b > g + 2U && b > 25U)
         return C_BLUE;
 
     return C_NONE;

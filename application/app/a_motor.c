@@ -84,14 +84,14 @@ void Motor_Forward(int16_t speed)
 
 void Motor_TurnLeft(int16_t left_speed, int16_t right_speed)
 {
-    MotorA_Set(left_speed);
-    MotorB_Set(right_speed);
+    MotorA_Set(right_speed);
+    MotorB_Set(left_speed);
 }
 
 void Motor_TurnRight(int16_t left_speed, int16_t right_speed)
 {
-    MotorA_Set(left_speed);
-    MotorB_Set(right_speed);
+    MotorA_Set(right_speed);
+    MotorB_Set(left_speed);
 }
 
 void Motor_Left90(void)

@@ -34,21 +34,23 @@
 /* ============================== Motor speed ================================ */
 #define MAIN_SPEED (1000)
 
-#define CFG_SM_FORWARD_SPEED (MAIN_SPEED)
-#define CFG_SM_TURN_INNER_SPEED (820)
-#define CFG_SM_TURN_OUTER_SPEED (MAIN_SPEED)
+#define CFG_SM_FORWARD_SPEED    (MAIN_SPEED) /* ca 2 banh bang nhau khi 2 sensor thay mau */
+#define CFG_SM_TURN_INNER_SPEED (600)        /* banh ben sensor thay line - giam de cua vao */
+#define CFG_SM_TURN_OUTER_SPEED (MAIN_SPEED) /* banh ben sensor mat line - giu full */
 #define CFG_SM_LOST_LEFT_SPEED (1000)
 #define CFG_SM_LOST_RIGHT_SPEED (-1000)
 #define CFG_SM_CHECKPOINT_COOLDOWN_MS (3000U)
 #define CFG_SM_ENTRY_DETECT_STREAK (3U)
 #define CFG_SM_MIN_ARM_FRAMES (3U)
+#define CFG_SM_CENTER_CONFIRM (3U) /* so frame lien tiep ca 2 sensor phai thay line truoc khi FORWARD */
+#define CFG_SM_LOST_DEBOUNCE  (4U) /* so frame ca 2 None truoc khi spin LOST - tranh sensor mep chap 1 frame */
 
 #define CFG_TIME_TURN (390)
 #define CFG_TIME_TURN45 (25)
 
-#define CFG_CHECKPOINT1_TURN (390)
-#define CFG_CHECKPOINT2_TURN (34)
-#define CFG_CHECKPOINT3_TURN (300)
-#define CFG_CHECKPOINT4_TURN (300)
+#define CFG_CHECKPOINT1_TURN (1200)
+#define CFG_CHECKPOINT2_TURN (200)
+#define CFG_CHECKPOINT3_TURN (800)
+#define CFG_CHECKPOINT4_TURN (800)
 
 #endif /* __CONFIG_H__ */
