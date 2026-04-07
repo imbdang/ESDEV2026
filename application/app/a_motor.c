@@ -30,13 +30,13 @@ void MotorA_Set(int16_t speed)
 {
     if (speed > 0)
     {
-        GPIO_SetPin(GPIOB, 0);
-        GPIO_ClearPin(GPIOB, 1);
+        GPIO_ClearPin(GPIOB, 0);
+        GPIO_SetPin(GPIOB, 1);
     }
     else if (speed < 0)
     {
-        GPIO_ClearPin(GPIOB, 0);
-        GPIO_SetPin(GPIOB, 1);
+        GPIO_SetPin(GPIOB, 0);
+        GPIO_ClearPin(GPIOB, 1);
         speed = -speed;
     }
     else
@@ -52,13 +52,13 @@ void MotorB_Set(int16_t speed)
 {
     if (speed > 0)
     {
-        GPIO_SetPin(GPIOB, 13);
-        GPIO_ClearPin(GPIOB, 14);
+        GPIO_ClearPin(GPIOB, 13);
+        GPIO_SetPin(GPIOB, 14);
     }
     else if (speed < 0)
     {
-        GPIO_ClearPin(GPIOB, 13);
-        GPIO_SetPin(GPIOB, 14);
+        GPIO_SetPin(GPIOB, 13);
+        GPIO_ClearPin(GPIOB, 14);
         speed = -speed;
     }
     else

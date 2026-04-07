@@ -12,7 +12,9 @@ Color_table target_color;
 
 State_car current_state;
 Checkpoint current_checkpoint;
+#if DEBUG_ENABLE
 CheckpointLog checkpoint_log;
+#endif
 static uint8_t entry_turn_used_for_next_target;
 static uint8_t checkpoint_entry_armed;
 static uint8_t checkpoint_entry_arm_frames;
@@ -23,7 +25,7 @@ static uint8_t center_confirm_count;
 static State_car last_turn_state;
 static uint8_t lost_debounce_count;
 
-#ifdef SM_LOG_ENABLE
+#if DEBUG_ENABLE
 SM_Log sm_log;
 
 static void sm_log_record(State_car state, const Sensor_result *s)
@@ -43,7 +45,7 @@ static void sm_log_record(State_car state, const Sensor_result *s)
     if (sm_log.count < SM_LOG_SIZE)
         sm_log.count++;
 }
-#endif
+#endif /* DEBUG_ENABLE */
 
 static void state_machine_advance_checkpoint(void)
 {
@@ -53,6 +55,7 @@ static void state_machine_advance_checkpoint(void)
     }
 }
 
+#if DEBUG_ENABLE
 static void state_machine_log_entry_sensor_snapshot(void)
 {
     checkpoint_log.entries[checkpoint_log.next_index] = sensor_result;
@@ -68,42 +71,43 @@ static void state_machine_log_entry_sensor_snapshot(void)
         checkpoint_log.count++;
     }
 }
+#endif /* DEBUG_ENABLE */
 
 static void state_machine_apply_checkpoint_entry_action(void)
 {
     switch (current_checkpoint)
     {
     case CHECK_POINT_1:
-        Motor_Forward(1000);
-        delay_ms(500);
+        Motor_Forward(MAIN_SPEED);
+        delay_ms(200);
         Motor_Stop();
         delay_ms(50);
-        MotorB_Set(-1000);
-        MotorA_Set(1000);
+        MotorB_Set(-MAIN_SPEED);
+        MotorA_Set(MAIN_SPEED);
         delay_ms(CFG_CHECKPOINT1_TURN);
         break;
 
     case CHECK_POINT_2:
         Motor_Stop();
         delay_ms(50);
-        MotorB_Set(-1000);
-        MotorA_Set(1000);
+        MotorB_Set(-MAIN_SPEED);
+        MotorA_Set(MAIN_SPEED);
         delay_ms(CFG_CHECKPOINT2_TURN);
         break;
 
     case CHECK_POINT_3:
         Motor_Stop();
         delay_ms(50);
-        MotorB_Set(-1000);
-        MotorA_Set(1000);
+        MotorB_Set(-MAIN_SPEED);
+        MotorA_Set(MAIN_SPEED);
         delay_ms(CFG_CHECKPOINT3_TURN);
         break;
 
     case CHECK_POINT_4:
         Motor_Stop();
         delay_ms(50);
-        MotorB_Set(-1000);
-        MotorA_Set(1000);
+        MotorB_Set(-MAIN_SPEED);
+        MotorA_Set(MAIN_SPEED);
         delay_ms(CFG_CHECKPOINT4_TURN);
         current_checkpoint = CHECK_POINT_5;
         StateMachine_AdvanceTarget();
@@ -112,11 +116,9 @@ static void state_machine_apply_checkpoint_entry_action(void)
     case CHECK_POINT_5:
         Motor_Stop();
         delay_ms(50);
-        Motor_Forward(1000);
-        delay_ms(1000);
+        Motor_Forward(MAIN_SPEED);
+        delay_ms(100);
         Motor_Stop();
-        MotorB_Set(-1000);
-        MotorA_Set(1000);
         while (1)
         {
         }
@@ -248,7 +250,9 @@ static void state_machine_apply(State_car state)
         break;
 
     case STATE_ENTRY_CHECKPOINT:
+#if DEBUG_ENABLE
         state_machine_log_entry_sensor_snapshot();
+#endif
         Motor_Stop();
         delay_ms(50);
         state_machine_apply_checkpoint_entry_action();
@@ -333,8 +337,10 @@ void StateMachine_Init(const Color_table *targets, uint8_t count)
     target_color_count = (uint8_t)((count > STATE_MACHINE_MAX_TARGETS) ? STATE_MACHINE_MAX_TARGETS : count);
     target_color_index = 0U;
     current_checkpoint = CHECK_POINT_1;
+#if DEBUG_ENABLE
     checkpoint_log.next_index = 0U;
     checkpoint_log.count = 0U;
+#endif
     entry_turn_used_for_next_target = 0U;
     checkpoint_entry_armed = 0U;
     checkpoint_entry_arm_frames = 0U;
@@ -343,15 +349,17 @@ void StateMachine_Init(const Color_table *targets, uint8_t count)
     center_confirm_count = 0U;
     last_turn_state = STATE_FORWARD;
     lost_debounce_count = 0U;
-#ifdef SM_LOG_ENABLE
+#if DEBUG_ENABLE
     sm_log.next  = 0U;
     sm_log.count = 0U;
 #endif
 
+#if DEBUG_ENABLE
     for (i = 0U; i < STATE_MACHINE_ENTRY_LOG_SIZE; i++)
     {
         checkpoint_log.entries[i] = empty_result;
     }
+#endif
 
     for (i = 0U; i < target_color_count; i++)
     {
@@ -378,7 +386,7 @@ void StateMachine_Update(void)
     prev_state    = current_state;
     current_state = state_machine_decide(left, right);
 
-#ifdef SM_LOG_ENABLE
+#if DEBUG_ENABLE
     if (current_state != prev_state)
         sm_log_record(current_state, &sensor_result);
 #endif

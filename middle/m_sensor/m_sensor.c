@@ -26,9 +26,6 @@ static I2C_Status TCS34_ReadSingle(volatile I2C_TypeDef *i2c, TCS34_Data *out)
     uint8_t raw[8];
     I2C_Status s;
 
-    if (out == 0)
-        return I2C_ERR_BUS;
-
     s = I2C_ReadRegs(i2c, TCS34_ADDR,
                      TCS34_CMD | TCS34_CMD_AUTO | TCS34_REG_CDATA,
                      raw, 8);
@@ -94,8 +91,6 @@ I2C_Status TCS34_Read(volatile I2C_TypeDef *i2c_1,
                       Sensor_result *result)
 {
     I2C_Status s;
-    if (result == 0)
-        return I2C_ERR_BUS;
 
     s = TCS34_ReadSingle(i2c_1, &result->Data_SS_1);
     if (s)
@@ -111,7 +106,7 @@ static Color_table TCS34_DetectColorSingle(const TCS34_Data *d)
     uint16_t g;
     uint16_t b;
 
-    if ((d == 0) || (d->c < 15))
+    if (d->c < 15)
         return C_NONE; /* too dark, unreliable */
 
     r = (uint16_t)(((uint32_t)d->r * 100U) / d->c);
@@ -145,7 +140,7 @@ static Color_table TCS34_DetectColorPostCP4Single(const TCS34_Data *d)
     uint16_t b;
     int16_t diff;
 
-    if ((d == 0) || (d->c < 15))
+    if (d->c < 15)
         return C_NONE;
 
     r = (uint16_t)(((uint32_t)d->r * 100U) / d->c);

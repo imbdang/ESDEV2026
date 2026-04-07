@@ -112,4 +112,13 @@ I2C_Status I2C_ReadRegs(volatile I2C_TypeDef *i2c,
                         uint8_t *buf,
                         uint8_t len);
 
+/**
+ * I2C_Recover - Giải phóng bus bị kẹt (BUSY stuck / slave giữ SDA thấp)
+ *   Toggle SCL tối đa 9 lần bằng GPIO, generate STOP thủ công, rồi re-init.
+ *   Gọi khi I2C_Read/Write trả về I2C_ERR_TIMEOUT liên tiếp.
+ */
+void I2C_Recover(volatile I2C_TypeDef *i2c,
+                 uint32_t pclk1_MHz,
+                 uint32_t speed_kHz);
+
 #endif /* __H_I2C_H__ */

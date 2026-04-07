@@ -30,8 +30,10 @@ static void app_init(void)
     // MPU6050_Init(I2C1, MPU6050_ACCEL_2G, MPU6050_GYRO_250);
     // delay_ms(30);
 
-    TCS34_Init(I2C1, CFG_TCS34_ATIME, CFG_TCS34_GAIN);
-    TCS34_Init(I2C2, CFG_TCS34_ATIME, CFG_TCS34_GAIN);
+    while (TCS34_Init(I2C1, CFG_TCS34_ATIME, CFG_TCS34_GAIN) != I2C_OK)
+        I2C_Recover(I2C1, 36, 400);
+    while (TCS34_Init(I2C2, CFG_TCS34_ATIME, CFG_TCS34_GAIN) != I2C_OK)
+        I2C_Recover(I2C2, 36, 400);
     delay_ms(30);
 
     TCS34_ReadID(I2C1, I2C2, &sensor_result);
@@ -43,7 +45,16 @@ void app_run(void)
 {
     app_init();
     delay_ms(1000);
-    // a_read_sensor();
+
+        //     Motor_Forward(400);
+        // delay_ms(200);
+        // Motor_Stop();
+        // delay_ms(50);
+        // MotorB_Set(-400);
+        // MotorA_Set(400);
+        // delay_ms(CFG_CHECKPOINT1_TURN);
+        // Motor_Stop();
+
     while (1)
     {
         a_read_sensor();

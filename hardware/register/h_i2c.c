@@ -151,6 +151,37 @@ void I2C_Init(volatile I2C_TypeDef *i2c, uint32_t pclk1_MHz, uint32_t speed_kHz)
 
     /* Reset peripheral */
     i2c->CR1 |= I2C_CR1_SWRST;
+
+    /* Nếu BUSY vẫn set sau SWRST → slave đang giữ SDA thấp, bit-bang để giải phóng */
+    if (i2c->SR2 & I2C_SR2_BUSY)
+    {
+        uint8_t scl_pin = (base == I2C1_BASE) ? 6U : 10U;
+        uint8_t sda_pin = (base == I2C1_BASE) ? 7U : 11U;
+
+        GPIO_ConfigPin(GPIOB, scl_pin, GPIO_MODE_OUTPUT_10MHz, GPIO_CNF_OUT_PP);
+        GPIO_ConfigPin(GPIOB, sda_pin, GPIO_MODE_INPUT, GPIO_CNF_IN_FLOATING);
+        GPIO_SetPin(GPIOB, scl_pin);
+
+        for (uint8_t i = 0U; i < 9U; i++)
+        {
+            if ((GPIOB->IDR >> sda_pin) & 1U)
+                break;
+            GPIO_ClearPin(GPIOB, scl_pin);
+            for (volatile uint32_t d = 0U; d < 200U; d++) {}
+            GPIO_SetPin(GPIOB, scl_pin);
+            for (volatile uint32_t d = 0U; d < 200U; d++) {}
+        }
+
+        /* STOP thủ công */
+        GPIO_ConfigPin(GPIOB, sda_pin, GPIO_MODE_OUTPUT_10MHz, GPIO_CNF_OUT_PP);
+        GPIO_ClearPin(GPIOB, sda_pin);
+        for (volatile uint32_t d = 0U; d < 200U; d++) {}
+        GPIO_SetPin(GPIOB, scl_pin);
+        for (volatile uint32_t d = 0U; d < 200U; d++) {}
+        GPIO_SetPin(GPIOB, sda_pin);
+        for (volatile uint32_t d = 0U; d < 200U; d++) {}
+    }
+
     i2c->CR1 &= ~I2C_CR1_SWRST;
     i2c->CR1 &= ~I2C_CR1_PE;
 
@@ -356,6 +387,50 @@ I2C_Status I2C_ReadReg(volatile I2C_TypeDef *i2c, uint8_t dev_addr,
     *value = (uint8_t)i2c->DR;
 
     return I2C_OK;
+}
+
+/* -------------------------------------------------------------------------- */
+
+void I2C_Recover(volatile I2C_TypeDef *i2c, uint32_t pclk1_MHz, uint32_t speed_kHz)
+{
+    uint32_t base = (uint32_t)i2c;
+    uint8_t scl_pin, sda_pin;
+
+    if (base == I2C1_BASE) { scl_pin = 6U; sda_pin = 7U; }
+    else                   { scl_pin = 10U; sda_pin = 11U; }
+
+    /* 1. Disable peripheral */
+    i2c->CR1 |= I2C_CR1_SWRST;
+
+    /* 2. Chuyển SCL → output PP, SDA → input để đọc trạng thái */
+    GPIO_ConfigPin(GPIOB, scl_pin, GPIO_MODE_OUTPUT_10MHz, GPIO_CNF_OUT_PP);
+    GPIO_ConfigPin(GPIOB, sda_pin, GPIO_MODE_INPUT, GPIO_CNF_IN_FLOATING);
+    GPIO_SetPin(GPIOB, scl_pin);
+
+    /* 3. Toggle SCL tối đa 9 lần cho đến khi SDA lên HIGH */
+    for (uint8_t i = 0U; i < 9U; i++)
+    {
+        if ((GPIOB->IDR >> sda_pin) & 1U)
+            break; /* SDA đã free */
+
+        GPIO_ClearPin(GPIOB, scl_pin);
+        for (volatile uint32_t d = 0U; d < 200U; d++) {}
+        GPIO_SetPin(GPIOB, scl_pin);
+        for (volatile uint32_t d = 0U; d < 200U; d++) {}
+    }
+
+    /* 4. Generate STOP thủ công: SDA low → high khi SCL đang high */
+    GPIO_ConfigPin(GPIOB, sda_pin, GPIO_MODE_OUTPUT_10MHz, GPIO_CNF_OUT_PP);
+    GPIO_ClearPin(GPIOB, sda_pin);
+    for (volatile uint32_t d = 0U; d < 200U; d++) {}
+    GPIO_SetPin(GPIOB, scl_pin);
+    for (volatile uint32_t d = 0U; d < 200U; d++) {}
+    GPIO_SetPin(GPIOB, sda_pin);
+    for (volatile uint32_t d = 0U; d < 200U; d++) {}
+
+    /* 5. Re-init I2C peripheral bình thường */
+    i2c->CR1 &= ~I2C_CR1_SWRST;
+    I2C_Init(i2c, pclk1_MHz, speed_kHz);
 }
 
 /* -------------------------------------------------------------------------- */

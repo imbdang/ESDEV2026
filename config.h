@@ -3,6 +3,10 @@
 
 #include "m_sensor.h"
 
+/* ============================== Debug ====================================== */
+/* Uncomment de bat debug (sm_log, checkpoint_log). Comment khi thi dau. */
+#define DEBUG_ENABLE 1
+
 /* ============================== TCS34 ====================================== */
 #define CFG_TCS34_ATIME 0xF4
 
@@ -32,13 +36,13 @@
 // 0x00    614.4 ms
 
 /* ============================== Motor speed ================================ */
-#define MAIN_SPEED (1000)
+#define MAIN_SPEED (500)
 
 #define CFG_SM_FORWARD_SPEED    (MAIN_SPEED) /* ca 2 banh bang nhau khi 2 sensor thay mau */
-#define CFG_SM_TURN_INNER_SPEED (600)        /* banh ben sensor thay line - giam de cua vao */
+#define CFG_SM_TURN_INNER_SPEED (MAIN_SPEED-200)        /* banh ben sensor thay line - giam de cua vao */
 #define CFG_SM_TURN_OUTER_SPEED (MAIN_SPEED) /* banh ben sensor mat line - giu full */
-#define CFG_SM_LOST_LEFT_SPEED (1000)
-#define CFG_SM_LOST_RIGHT_SPEED (-1000)
+#define CFG_SM_LOST_LEFT_SPEED (MAIN_SPEED)
+#define CFG_SM_LOST_RIGHT_SPEED (-MAIN_SPEED)
 #define CFG_SM_CHECKPOINT_COOLDOWN_MS (3000U)
 #define CFG_SM_ENTRY_DETECT_STREAK (3U)
 #define CFG_SM_MIN_ARM_FRAMES (3U)
@@ -48,9 +52,10 @@
 #define CFG_TIME_TURN (390)
 #define CFG_TIME_TURN45 (25)
 
-#define CFG_CHECKPOINT1_TURN (1200)
+//200 ~ 45
+#define CFG_CHECKPOINT1_TURN (500)
 #define CFG_CHECKPOINT2_TURN (200)
-#define CFG_CHECKPOINT3_TURN (800)
-#define CFG_CHECKPOINT4_TURN (800)
+#define CFG_CHECKPOINT3_TURN (450)
+#define CFG_CHECKPOINT4_TURN (450)
 
 #endif /* __CONFIG_H__ */

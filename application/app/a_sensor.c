@@ -6,10 +6,8 @@ static uint8_t post_cp4_mode = 0U;
 
 void a_read_sensor(void)
 {
-    Sensor_result tmp = sensor_result;
-    if (TCS34_Read(I2C1, I2C2, &tmp) != I2C_OK)
+    if (TCS34_Read(I2C1, I2C2, &sensor_result) != I2C_OK)
         return;
-    sensor_result = tmp;
 
     if (post_cp4_mode == 0U)
     {
