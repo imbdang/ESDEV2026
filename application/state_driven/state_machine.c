@@ -79,7 +79,7 @@ static void state_machine_apply_checkpoint_entry_action(void)
     {
     case CHECK_POINT_1:
         Motor_Forward(MAIN_SPEED);
-        delay_ms(200);
+        delay_ms(70);
         Motor_Stop();
         delay_ms(50);
         MotorB_Set(-MAIN_SPEED);
@@ -106,6 +106,8 @@ static void state_machine_apply_checkpoint_entry_action(void)
     case CHECK_POINT_4:
         Motor_Stop();
         delay_ms(50);
+        Motor_Forward(MAIN_SPEED);
+        delay_ms(100);
         MotorB_Set(-MAIN_SPEED);
         MotorA_Set(MAIN_SPEED);
         delay_ms(CFG_CHECKPOINT4_TURN);
@@ -271,7 +273,15 @@ static void state_machine_apply(State_car state)
         //     Motor_Stop();
         //     lost_backed_up = 1U;
         // }
+        
         Motor_TurnRight(CFG_SM_LOST_LEFT_SPEED, CFG_SM_LOST_RIGHT_SPEED);
+
+        // Motor_Stop();
+        // while (1)
+        // {
+        //     /* code */
+        // }
+        
         break;
 
     case STATE_IDLE:
