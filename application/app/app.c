@@ -2,6 +2,7 @@
 #include "config.h"
 #include "m_clock.h"
 #include "m_gpio.h"
+#include "m_uart.h"
 #include "state_machine.h"
 #include "systick.h"
 
@@ -21,6 +22,7 @@ static void app_init(void)
 
     M_CLOCK_Set72MHz_HSE_PLL9();
     SysTick_Init_1ms(72000000);
+    M_UART_Init();
     Motor_Init(72000000, 10000);
 
     I2C_Init(I2C1, 36, 400);
@@ -44,7 +46,7 @@ static void app_init(void)
 void app_run(void)
 {
     app_init();
-    delay_ms(1000);
+    delay_ms(100);
 
         //     Motor_Forward(400);
         // delay_ms(200);
@@ -55,9 +57,16 @@ void app_run(void)
         // delay_ms(CFG_CHECKPOINT1_TURN);
         // Motor_Stop();
 
+    M_UART_SendString("ESDEV10:XP-HA NOI\r\n");
+    delay_ms(10);
+    for (uint8_t i = 0; i < 2; i++)
+    {
+        M_UART_SendString("ESDEV10:FW-LUNGCU\r\n");
+        delay_ms(5);
+    }
     while (1)
     {
-        a_read_sensor();
-        StateMachine_Update();
+        // a_read_sensor();
+        // StateMachine_Update();
     }
 }

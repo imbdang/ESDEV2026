@@ -1,6 +1,7 @@
 #include "state_machine.h"
 #include "app.h"
 #include "config.h"
+#include "m_uart.h"
 #include "systick.h"
 
 Color_table target_colors[STATE_MACHINE_MAX_TARGETS];
@@ -78,13 +79,23 @@ static void state_machine_apply_checkpoint_entry_action(void)
     switch (current_checkpoint)
     {
     case CHECK_POINT_1:
+        
         Motor_Forward(MAIN_SPEED);
-        delay_ms(70);
+        delay_ms(30);
         Motor_Stop();
         delay_ms(50);
         MotorB_Set(-MAIN_SPEED);
         MotorA_Set(MAIN_SPEED);
         delay_ms(CFG_CHECKPOINT1_TURN);
+
+        M_UART_SendString("ESDEV10:CK-LUNGCU\r\n");
+
+        for (uint8_t i = 0; i < 2; i++)
+        {
+            M_UART_SendString("ESDEV10:FW-HOANGSA\r\n");
+            delay_ms(5);
+        }
+
         break;
 
     case CHECK_POINT_2:
@@ -93,6 +104,15 @@ static void state_machine_apply_checkpoint_entry_action(void)
         MotorB_Set(-MAIN_SPEED);
         MotorA_Set(MAIN_SPEED);
         delay_ms(CFG_CHECKPOINT2_TURN);
+
+        M_UART_SendString("ESDEV10:CK-HOANGSA\r\n");
+
+        for (uint8_t i = 0; i < 2; i++)
+        {
+            M_UART_SendString("ESDEV10:FW-TRUONGSA\r\n");
+            delay_ms(5);
+        }
+
         break;
 
     case CHECK_POINT_3:
@@ -101,26 +121,39 @@ static void state_machine_apply_checkpoint_entry_action(void)
         MotorB_Set(-MAIN_SPEED);
         MotorA_Set(MAIN_SPEED);
         delay_ms(CFG_CHECKPOINT3_TURN);
+
+        M_UART_SendString("ESDEV10:CK-TRUONGSA\r\n");
+
+        for (uint8_t i = 0; i < 2; i++)
+        {
+            M_UART_SendString("ESDEV10:FW-CAMAU\r\n");
+            delay_ms(5);
+        }
+
         break;
 
     case CHECK_POINT_4:
         Motor_Stop();
         delay_ms(50);
-        Motor_Forward(MAIN_SPEED);
-        delay_ms(100);
         MotorB_Set(-MAIN_SPEED);
         MotorA_Set(MAIN_SPEED);
         delay_ms(CFG_CHECKPOINT4_TURN);
         current_checkpoint = CHECK_POINT_5;
         StateMachine_AdvanceTarget();
+
+        M_UART_SendString("ESDEV10:CK-CAMAU\r\n");
+
+        for (uint8_t i = 0; i < 2; i++)
+        {
+            M_UART_SendString("ESDEV10:FW-HANOI\r\n");
+            delay_ms(5);
+        }
+
         break;
 
     case CHECK_POINT_5:
         Motor_Stop();
         delay_ms(50);
-        Motor_Forward(MAIN_SPEED);
-        delay_ms(100);
-        Motor_Stop();
         while (1)
         {
         }
